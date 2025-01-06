@@ -1,112 +1,69 @@
-import { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { cookies } from "next/headers";
 
-const BASE_URL = process.env.BASE_URL;
+import  NextAuth, { NextAuthOptions } from "next-auth";
+import KeycloakProvider from "next-auth/providers/keycloak";
+
 export const authOptions: NextAuthOptions = {
   providers: [
-    CredentialsProvider({
-      name: "Credentials",
-      credentials: {
-        email: {
-          label: "Email",
-          type: "text",
-          placeholder: "jsmith@example.com",
-        },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        const cookieStore = await cookies();
-        try {
-          if (!credentials?.email || !credentials?.password) {
-            throw new Error("Missing username or password");
-          }
-
-          const response = await fetch(`${BASE_URL}/api/auth/login`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: credentials.email,
-              password: credentials.password,
-            }),
-          });
-
-          if (!response.ok) {
-            throw new Error("Invalid credentials");
-          }
-
-          const { user } = await response.json();
-          if (!user) {
-            throw new Error("No user returned from server");
-          }
-
-          cookieStore.set("USER_ID", user.id.toString());
-          cookieStore.set("TOKEN", user.token);
-          cookieStore.set("ROLE", user.role);
-
-          const payloadJwt = JSON.parse(
-            Buffer.from(user.token.split(".")[1], "base64").toString()
-          );
-
-          // console.log("payload jwt", payloadJwt.exp);
-
-          return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            token: user.token,
-            role: user.role,
-            accessTokenExpires: payloadJwt.exp,
-          };
-        } catch (error) {
-          console.error("Authorize Error:", error);
-          throw new Error("Invalid credentials");
-        }
-      },
+    KeycloakProvider({
+      name: "keycloak",
+      clientId: process.env.KEYCLOAK_CLIENT_ID as string,
+      clientSecret: process.env.KEYCLOAK_CLIENT_SECRET as string,
+      // AQUI SE DEBE CAMBIAR LA URL DE KEYCLOAK
+      issuer: process.env.KEYCLOAK_ISSUER as string,
     }),
   ],
   callbacks: {
-    jwt: async ({ token, user }) => {
-      if (user) {
-        console.log("User desde JWT: --->", user);
-        console.log("Token --->", token);
+    // CALLBACKN PARA MANIPULAR EL TOKEN DE NEXTAUTH
+    async jwt({ token, account, profile }) {
+      // SI EL USUARIO PRIMERA VEZ QUE SE AUTENTICA
+      if (account && profile) {
+        token.email = profile.email;
 
-        return {
-          ...token,
-          ...user,
-        };
+        // AQUI OBTENEMOS EL ROL HACIA NUESTRO BACKEND EN NEST
+        // EN ESTE CASO ESSTA BASADO EN EL CORREO
+        const response = await fetch(`${process.env.BACKEND_URL}/api/user/role`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${account.access_token}`,
+          },
+          body: JSON.stringify({ email: profile.email }),
+        });
+        
+        try {
+          if (response.ok) {
+            const { role } = await response.json();
+            token.role = role; // Agrega el rol al token
+          } else {
+            console.error("Error al obtener el rol:", response.statusText);
+            token.role = "unknown"; // Fallback a un rol predeterminado
+          }
+        } catch (error) {
+          console.error("Excepción al obtener el rol:", error);
+          token.role = "unknown"; // Fallback seguro
+        }
+     
       }
-
       return token;
     },
-    session: async ({ session, token }) => {
-      // console.log("session en session", session);
-      // console.log("token en session", token);
-
-      if (token.error) {
-        session.error = token.error;
-      }
-
-      if (token.token) {
-        session.user.token = token.token;
-      }
-
-      if (token.role) {
-        session.user.role = token.role!;
-      }
-
-      // console.log("Session: desde sesioon", session);
-
+    // AQUI MANEJAMOS LA SESION
+    async session({ session, token }) {
+      session.user = {
+        id: token.sub!,
+        name: token.name || "",
+        email: token.email!,
+        role: token.role!,
+        token: token.token,
+      };
+      session.user.token = token.token;
       return session;
     },
   },
-  pages: {
-    signIn: "/login",
-  },
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
     maxAge: 60 * 60, // 1 hora
   },
 };
+
+export default NextAuth(authOptions);
