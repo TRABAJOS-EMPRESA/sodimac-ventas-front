@@ -1,9 +1,9 @@
 import React from 'react'
 
-function ExecutiveDeskPage() {
+function DeskExecutivePage() {
   return (
-    <div>ExecutiveDeskPage</div>
+    <div>DeskExecutivePage</div>
   )
 }
 
-export default ExecutiveDeskPage
+export default DeskExecutivePage

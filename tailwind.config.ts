@@ -9,7 +9,11 @@ export default {
   ],
   theme: {
   	extend: {
+		boxShadow: {
+			sodimac: '20px 20px 50px -30px rgba(150, 10, 79, 0.3), 0 0 0 0 #6366F1',
+		},
   		colors: {
+			
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

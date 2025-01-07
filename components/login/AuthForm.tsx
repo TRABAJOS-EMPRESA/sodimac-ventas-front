@@ -47,11 +47,6 @@ const AuthForm = <T extends FieldValues>({
     onSubmit(form.getValues());
   };
 
-  const valuesLoginFake = {
-    email: "test@example.com",
-    password: "password123"
-  }
-
   const buttonText = formType === "SIGN-IN" ? "Inicia Sesión" : "Registrate";
   const subButtonText =
     formType === "SIGN-IN"
@@ -128,13 +123,13 @@ const AuthForm = <T extends FieldValues>({
             : buttonText}
         </Button>
       </form>
-        <Button
-        onClick={()=>signIn("Credentials", valuesLoginFake)}
-          className="bg-primary-blue hover:bg-blue-500 mt-2 text-primary-white min-h-11 w-full rounded-full"
-          disabled={form.formState.isSubmitting}
-        >
-          Inicia Sesión en <span className="font-bold">NT</span>
-        </Button>
+      <Button
+        className="bg-primary-blue hover:bg-blue-500 mt-2 text-primary-white min-h-11 w-full rounded-full"
+        disabled={form.formState.isSubmitting}
+        onClick={() => signIn('keycloak')}
+      >
+        Inicia Sesión en <span className="font-bold">NT</span>
+      </Button>
     </Form>
   );
 };
