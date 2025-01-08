@@ -9,6 +9,9 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.KEYCLOAK_CLIENT_ID as string,
       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET as string,
       // AQUI SE DEBE CAMBIAR LA URL DE KEYCLOAK ES LA URL DEL SERVIDOR DE KEY
+
+      // Y LA URL DE REDIRECCION ES LA URL DE NEXT AUTH
+      // QUE  ES http://localhost:3000/api/auth/callback/keycloak
       issuer: process.env.KEYCLOAK_ISSUER as string,
     }),
 
@@ -28,7 +31,7 @@ export const authOptions: NextAuthOptions = {
               body: JSON.stringify({
                 email: credentials?.email,
                 password: credentials?.password,
-              }), // Asegúrate de enviar el cuerpo correctamente
+              }),
             }
           );
 
@@ -149,7 +152,7 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
-    maxAge: 60 * 60, // 1 hora
+    maxAge: 60 * 60,
   },
 };
 
