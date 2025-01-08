@@ -71,7 +71,7 @@ export const authOptions: NextAuthOptions = {
         token.tokenKeycloak = user.tokenKeycloak;
         token.provider = account?.provider;
       } else if (user && account?.provider === "credentials") {
-        if (user) {
+       
           console.log("user desde jwt", user);
 
           token.id = user.id;
@@ -80,7 +80,7 @@ export const authOptions: NextAuthOptions = {
           token.role = user.role;
           token.tokenCredentials = user.tokenCredentials;
           token.provider = account?.provider;
-        }
+        
       }
 
       // if (account && token) {
