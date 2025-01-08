@@ -1,4 +1,4 @@
-"use client"; // Marca el componente como cliente
+"use client"; 
 
 import { signOut } from "next-auth/react";
 import React from "react";

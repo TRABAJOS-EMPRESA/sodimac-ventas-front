@@ -126,7 +126,7 @@ const AuthForm = <T extends FieldValues>({
       <Button
         className="bg-primary-blue hover:bg-blue-500 mt-2 text-primary-white min-h-11 w-full rounded-full"
         disabled={form.formState.isSubmitting}
-        onClick={() => signIn('keycloak')}
+        onClick={() => signIn("keycloak")}
       >
         Inicia Sesión en <span className="font-bold">NT</span>
       </Button>
