@@ -12,3 +12,5 @@
 //     console.error("Failed to initialize adapter:", error);
 //   }
 // };
+
+

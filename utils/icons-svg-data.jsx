@@ -1,6 +1,4 @@
-
-
-export const getCompassSVG = ( className ) => {
+export const getCompassSVG = (className) => {
   return (
     <svg
       className={className}
@@ -22,7 +20,7 @@ export const getCompassSVG = ( className ) => {
   );
 };
 
-export const getStarFillSVG = ( className ) => {
+export const getStarFillSVG = (className) => {
   return (
     <svg
       className={className}
@@ -52,7 +50,7 @@ export const getStarFillSVG = ( className ) => {
   );
 };
 
-export const getDownloadSVG = ( className ) => {
+export const getDownloadSVG = (className) => {
   return (
     <svg
       className={className}
@@ -89,7 +87,7 @@ export const getDownloadSVG = ( className ) => {
     </svg>
   );
 };
-export const getBriefCaseSVG = ( className ) => {
+export const getBriefCaseSVG = (className) => {
   return (
     <svg
       className={className}
@@ -106,7 +104,7 @@ export const getBriefCaseSVG = ( className ) => {
     </svg>
   );
 };
-export const getAlignLeftSVG = ( className ) => {
+export const getAlignLeftSVG = (className) => {
   return (
     <svg
       className={className}
@@ -147,7 +145,7 @@ export const getAlignLeftSVG = ( className ) => {
     </svg>
   );
 };
-export const getHomeSVG = ( className ) => {
+export const getHomeSVG = (className) => {
   return (
     <svg
       className={className}
@@ -184,7 +182,7 @@ export const getHomeSVG = ( className ) => {
     </svg>
   );
 };
-export const getLogoSmallSVG = ( className ) => {
+export const getLogoSmallSVG = (className) => {
   return (
     <svg
       className={className}
@@ -209,7 +207,7 @@ export const getLogoSmallSVG = ( className ) => {
     </svg>
   );
 };
-export const getPrimeSVG = ( className ) => {
+export const getPrimeSVG = (className) => {
   return (
     <svg
       width="30"
@@ -269,7 +267,7 @@ export const getPrimeSVG = ( className ) => {
     </svg>
   );
 };
-export const getThLargeSVG = ( className ) => {
+export const getThLargeSVG = (className) => {
   return (
     <svg
       className={className}
@@ -298,7 +296,7 @@ export const getThLargeSVG = ( className ) => {
     </svg>
   );
 };
-export const getUserSVG = ( className ) => {
+export const getUserSVG = (className) => {
   return (
     <svg
       className={className}
@@ -331,10 +329,9 @@ export const getUserSVG = ( className ) => {
     </svg>
   );
 };
-export const getWalletsSVG = ( className ) => {
+export const getWalletsSVG = (className) => {
   return (
     <svg
-      
       width="30"
       height="30"
       viewBox="0 0 22 22"
@@ -361,6 +358,58 @@ export const getWalletsSVG = ( className ) => {
           />
         </clipPath>
       </defs>
+    </svg>
+  );
+};
+export const getBarsSVG = (className) => {
+  return (
+    <svg
+      width="19"
+      height="18"
+      viewBox="0 0 19 18"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <g clipPath="url(#clip0_0_9585)">
+        <path
+          d="M17.4032 9.72231H1.59677C1.3722 9.72231 1.15682 9.6331 0.998014 9.4743C0.839213 9.3155 0.75 9.10012 0.75 8.87554C0.75 8.65096 0.839213 8.43558 0.998014 8.27678C1.15682 8.11798 1.3722 8.02876 1.59677 8.02876H17.4032C17.6278 8.02876 17.8432 8.11798 18.002 8.27678C18.1608 8.43558 18.25 8.65096 18.25 8.87554C18.25 9.10012 18.1608 9.3155 18.002 9.4743C17.8432 9.6331 17.6278 9.72231 17.4032 9.72231Z"
+          fill="#1E293B"
+        />
+        <path
+          d="M17.4032 4.64167H1.59677C1.3722 4.64167 1.15682 4.55245 0.998014 4.39365C0.839213 4.23485 0.75 4.01947 0.75 3.79489C0.75 3.57032 0.839213 3.35494 0.998014 3.19613C1.15682 3.03733 1.3722 2.94812 1.59677 2.94812H17.4032C17.6278 2.94812 17.8432 3.03733 18.002 3.19613C18.1608 3.35494 18.25 3.57032 18.25 3.79489C18.25 4.01947 18.1608 4.23485 18.002 4.39365C17.8432 4.55245 17.6278 4.64167 17.4032 4.64167Z"
+          fill="#1E293B"
+        />
+        <path
+          d="M17.4032 14.803H1.59677C1.3722 14.803 1.15682 14.7137 0.998014 14.5549C0.839213 14.3961 0.75 14.1808 0.75 13.9562C0.75 13.7316 0.839213 13.5162 0.998014 13.3574C1.15682 13.1986 1.3722 13.1094 1.59677 13.1094H17.4032C17.6278 13.1094 17.8432 13.1986 18.002 13.3574C18.1608 13.5162 18.25 13.7316 18.25 13.9562C18.25 14.1808 18.1608 14.3961 18.002 14.5549C17.8432 14.7137 17.6278 14.803 17.4032 14.803Z"
+          fill="#1E293B"
+        />
+      </g>
+      <defs>
+        <clipPath id="clip0_0_9585">
+          <rect
+            width="17.5"
+            height="17.5"
+            fill="white"
+            transform="translate(0.75 0.12554)"
+          />
+        </clipPath>
+      </defs>
+    </svg>
+  );
+};
+export const getBellSVG = (className) => {
+  return (
+    <svg
+      width="38"
+      height="38"
+      viewBox="0 0 29 27"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M27.3957 19.914C27.2596 19.914 24.2039 19.3694 24.2039 10.4597C24.2039 4.16684 20.5432 0.248962 14.4924 0.248962C8.44165 0.248962 4.78093 4.16684 4.78093 10.4597C4.78093 19.5358 1.61939 19.914 1.63452 19.914C1.33363 19.914 1.04506 20.0335 0.832294 20.2463C0.619529 20.4591 0.5 20.7476 0.5 21.0485C0.5 21.3494 0.619529 21.638 0.832294 21.8508C1.04506 22.0635 1.33363 22.1831 1.63452 22.1831H8.94084C9.19337 23.4699 9.88511 24.629 10.8978 25.4623C11.9104 26.2955 13.1811 26.7511 14.4924 26.7511C15.8038 26.7511 17.0745 26.2955 18.0871 25.4623C19.0998 24.629 19.7915 23.4699 20.044 22.1831H27.3655C27.6664 22.1831 27.9549 22.0635 28.1677 21.8508C28.3805 21.638 28.5 21.3494 28.5 21.0485C28.5 20.7476 28.3805 20.4591 28.1677 20.2463C27.9549 20.0335 27.6664 19.914 27.3655 19.914H27.3957ZM14.4924 24.4521C13.791 24.4508 13.1073 24.2318 12.5356 23.8254C11.9639 23.4189 11.5324 22.8451 11.3006 22.1831H17.6842C17.4525 22.8451 17.021 23.4189 16.4493 23.8254C15.8776 24.2318 15.1939 24.4508 14.4924 24.4521ZM5.05321 19.914C6.14236 18.2652 7.04997 15.3759 7.04997 10.4597C7.04997 5.5434 9.77283 2.51801 14.4924 2.51801C19.212 2.51801 21.9349 5.40726 21.9349 10.4597C21.9349 15.5121 22.8425 18.2652 23.9317 19.914H5.05321Z"
+        fill="#6C757D"
+      />
     </svg>
   );
 };
