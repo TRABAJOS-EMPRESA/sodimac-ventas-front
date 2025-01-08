@@ -8,10 +8,10 @@ export const authOptions: NextAuthOptions = {
       name: "keycloak",
       clientId: process.env.KEYCLOAK_CLIENT_ID as string,
       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET as string,
+      // Y LA URL DE NEXTAUTH QUE DEBEMOS ENVIAR ES
+      // http://localhost:3000/api/auth/callback/keycloak
       // AQUI SE DEBE CAMBIAR LA URL DE KEYCLOAK ES LA URL DEL SERVIDOR DE KEY
 
-      // Y LA URL DE REDIRECCION ES LA URL DE NEXT AUTH
-      // QUE  ES http://localhost:3000/api/auth/callback/keycloak
       issuer: process.env.KEYCLOAK_ISSUER as string,
     }),
 
@@ -65,25 +65,48 @@ export const authOptions: NextAuthOptions = {
         // LOGICA DE OBTENCION DE ROL EN KEYCLOAK
         // TRAER LA RESPUESTA DE BACKEND RESPECTO AL ROL O PERFIL
 
+        const uuid = account.id;
+
+        // Petición POST para obtener datos adicionales
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/loginCAMP`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ campUuid: uuid }),
+            }
+          );
+
+          if (response.ok) {
+            const additionalData = await response.json();
+
+            //datos adicionales al token
+            token.role = additionalData.role;
+            token.campUuid = uuid as string
+          } else {
+            console.error("Error al obtener datos adicionales:", response.statusText);
+          }
+        } catch (error) {
+          console.error("Error obteniendo datos adicionales:", error);
+        }
+
+        console.log("user desde jwt", user);
+
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.tokenKeycloak = user.tokenKeycloak;
+        token.provider = account?.provider;
+      } else if (user && account?.provider === "credentials") {
         console.log("user desde jwt", user);
 
         token.id = user.id;
         token.name = user.name;
         token.email = user.email;
         token.role = user.role;
-        token.tokenKeycloak = user.tokenKeycloak;
+        token.tokenCredentials = user.tokenCredentials;
         token.provider = account?.provider;
-      } else if (user && account?.provider === "credentials") {
-       
-          console.log("user desde jwt", user);
-
-          token.id = user.id;
-          token.name = user.name;
-          token.email = user.email;
-          token.role = user.role;
-          token.tokenCredentials = user.tokenCredentials;
-          token.provider = account?.provider;
-        
       }
 
       // if (account && token) {

@@ -14,6 +14,7 @@ export default {
 		},
   		colors: {
 			
+			border_sodimac: '#DFE7EF',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {

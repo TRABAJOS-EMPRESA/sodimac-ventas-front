@@ -1,4 +1,4 @@
-import Logout from "@/components/login/Logout";
+// import Logout from "@/components/login/Logout";
 import { LeftSideBarMenu } from "@/interfaces/left-sidebar-menu.interface";
 import Link from "next/link";
 
@@ -25,9 +25,9 @@ function LeftSideBar(props: Props) {
           </Link>
 
       ))}
-          <div>
+          {/* <div>
             <Logout />
-          </div>
+          </div> */}
     </section>
   );
 }

@@ -1,4 +1,4 @@
-import Footer from "@/components/footer/Footer";
+// import Footer from "@/components/footer/Footer";
 import LeftSideBar from "@/components/navigation/left-sidebar/LeftSideBar";
 import NavBar from "@/components/navigation/nav/NavBar";
 import { leftSideBarMenuExecutive } from "@/constants/menus";
@@ -14,13 +14,13 @@ export default function RootExecutiveLayout({
         <LeftSideBar leftSideMenu={leftSideBarMenuExecutive} />
         <div className="flex flex-1 flex-col w-full">
           <NavBar />
-          <section className="flex min-h-screen flex-col py-24 px-4">
+          <section className="flex min-h-screen flex-col max-w-[1080px] m-auto">
             {children}
           </section>
 
-          <div>
+          {/* <div>
             <Footer />
-          </div>
+          </div> */}
         </div>
       </div>
     </main>
