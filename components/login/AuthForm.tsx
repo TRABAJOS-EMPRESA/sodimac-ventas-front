@@ -124,7 +124,7 @@ const AuthForm = <T extends FieldValues>({
         </Button>
       </form>
       <Button
-        className="bg-primary-blue hover:bg-blue-500 mt-2 text-primary-white min-h-11 w-full rounded-full"
+        className="bg-primary-white border border-primary-blue hover:bg-primary-blue hover:text-primary-white mt-2 text-primary-blue min-h-11 w-full rounded-full"
         disabled={form.formState.isSubmitting}
         onClick={() => signIn("keycloak")}
       >

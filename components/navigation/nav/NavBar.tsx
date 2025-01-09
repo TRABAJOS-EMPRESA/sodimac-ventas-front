@@ -3,7 +3,7 @@ import { getBarsSVG, getBellSVG } from "@/utils/icons-svg-data";
 function NavBar() {
   return (
     <nav
-      className="flex bg-primary-white justify-between items-center w-full lg:w-[calc(100%-90px)] px-10 fixed
+      className="flex justify-between items-center w-full lg:w-[calc(100%-90px)] px-10 fixed
     py-2 dark:shadow-none  "
     >
       <div className="cursor-pointer">{getBarsSVG()}</div>

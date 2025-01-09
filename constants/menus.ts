@@ -1,11 +1,11 @@
+import { LeftSideBarMenu } from "@/interfaces/navigation/left-sidebar-menu.interface";
 import {
-    getAlignLeftSVG,
+  getAlignLeftSVG,
   getBriefCaseSVG,
   getLogoSmallSVG,
   getWalletsSVG,
 } from "@/utils/icons-svg-data";
 import ROUTES_EXECUTIVE from "./routes";
-import { LeftSideBarMenu } from "@/interfaces/left-sidebar-menu.interface";
 
 export const leftSideBarMenuExecutive: LeftSideBarMenu[] = [
   {

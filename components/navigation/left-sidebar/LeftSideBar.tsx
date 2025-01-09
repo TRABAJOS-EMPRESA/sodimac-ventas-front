@@ -1,5 +1,5 @@
 // import Logout from "@/components/login/Logout";
-import { LeftSideBarMenu } from "@/interfaces/left-sidebar-menu.interface";
+import { LeftSideBarMenu } from "@/interfaces/navigation/left-sidebar-menu.interface";
 import Link from "next/link";
 
 interface Props {
