@@ -1,0 +1,14 @@
+const { spawn } = require('child_process');
+
+const server = spawn('http-server', ['test-sso', '-p', '8080'], {
+  stdio: 'inherit',
+  shell: true,
+});
+
+server.on('error', (error) => {
+  console.error(`Error executing the command: ${error}`);
+});
+
+server.on('close', (code) => {
+  console.log(`The HTTP server process ended with code ${code}`);
+});

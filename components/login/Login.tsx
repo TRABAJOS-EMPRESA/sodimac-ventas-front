@@ -16,7 +16,7 @@ function Login() {
     <div>
       <div>
         <Image
-          src="/img/login-group.png"
+          src="/img/icons/login-icons/login-group.png"
           alt="login-group"
           width={350}
           height={350}

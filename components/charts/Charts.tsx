@@ -97,8 +97,9 @@ function Charts(props: ChartsDeskData) {
             {chart.chart}
           </div>
           <Link
-            href={`${ROUTES_EXECUTIVE.OPORTUNITIES_CHILD}?state=${chart.state.replace(/\s+/g, "")}`}
-            className="text-primary-white flex items-center justify-center w-full text-center rounded-lg hover:bg-blue-600 cursor-pointer bg-primary-blue py-2 px-3"
+          // /\s+/g
+            href={`${ROUTES_EXECUTIVE.OPORTUNITIES_CHILD}?state=${chart.state.replace(" ", "_")}`}
+            className="text-primary-white flex items-center justify-center w-full text-center rounded-full hover:bg-blue-600 cursor-pointer bg-primary-blue py-2 px-3"
           >
             Ver
           </Link>

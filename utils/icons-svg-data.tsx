@@ -1,7 +1,6 @@
-export const getCompassSVG = (className) => {
+export const getCompassSVG = () => {
   return (
     <svg
-      className={className}
       width="30"
       height="30"
       viewBox="0 0 22 22"
@@ -20,10 +19,10 @@ export const getCompassSVG = (className) => {
   );
 };
 
-export const getStarFillSVG = (className) => {
+export const getStarFillSVG = () => {
   return (
     <svg
-      className={className}
+      
       width="30"
       height="30"
       viewBox="0 0 22 22"
@@ -50,10 +49,10 @@ export const getStarFillSVG = (className) => {
   );
 };
 
-export const getDownloadSVG = (className) => {
+export const getDownloadSVG = () => {
   return (
     <svg
-      className={className}
+      
       width="30"
       height="30"
       viewBox="0 0 22 22"
@@ -87,10 +86,10 @@ export const getDownloadSVG = (className) => {
     </svg>
   );
 };
-export const getBriefCaseSVG = (className) => {
+export const getBriefCaseSVG = () => {
   return (
     <svg
-      className={className}
+      
       width="30"
       height="30"
       viewBox="0 0 22 20"
@@ -104,10 +103,10 @@ export const getBriefCaseSVG = (className) => {
     </svg>
   );
 };
-export const getAlignLeftSVG = (className) => {
+export const getAlignLeftSVG = () => {
   return (
     <svg
-      className={className}
+      
       width="30"
       height="30"
       viewBox="0 0 22 22"
@@ -145,10 +144,10 @@ export const getAlignLeftSVG = (className) => {
     </svg>
   );
 };
-export const getHomeSVG = (className) => {
+export const getHomeSVG = () => {
   return (
     <svg
-      className={className}
+      
       width="30"
       height="30"
       viewBox="0 0 22 22"
@@ -182,10 +181,10 @@ export const getHomeSVG = (className) => {
     </svg>
   );
 };
-export const getLogoSmallSVG = (className) => {
+export const getLogoSmallSVG = () => {
   return (
     <svg
-      className={className}
+      
       width="30"
       height="30"
       viewBox="0 0 22 21"
@@ -207,7 +206,7 @@ export const getLogoSmallSVG = (className) => {
     </svg>
   );
 };
-export const getPrimeSVG = (className) => {
+export const getPrimeSVG = () => {
   return (
     <svg
       width="30"
@@ -267,10 +266,10 @@ export const getPrimeSVG = (className) => {
     </svg>
   );
 };
-export const getThLargeSVG = (className) => {
+export const getThLargeSVG = () => {
   return (
     <svg
-      className={className}
+      
       width="30"
       height="30"
       viewBox="0 0 22 22"
@@ -296,10 +295,10 @@ export const getThLargeSVG = (className) => {
     </svg>
   );
 };
-export const getUserSVG = (className) => {
+export const getUserSVG = () => {
   return (
     <svg
-      className={className}
+      
       width="30"
       height="30"
       viewBox="0 0 22 22"
@@ -329,7 +328,7 @@ export const getUserSVG = (className) => {
     </svg>
   );
 };
-export const getWalletsSVG = (className) => {
+export const getWalletsSVG = () => {
   return (
     <svg
       width="30"
@@ -361,7 +360,7 @@ export const getWalletsSVG = (className) => {
     </svg>
   );
 };
-export const getBarsSVG = (className) => {
+export const getBarsSVG = () => {
   return (
     <svg
       width="19"
@@ -397,7 +396,7 @@ export const getBarsSVG = (className) => {
     </svg>
   );
 };
-export const getBellSVG = (className) => {
+export const getBellSVG = () => {
   return (
     <svg
       width="38"

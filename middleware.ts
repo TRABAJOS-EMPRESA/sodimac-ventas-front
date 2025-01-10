@@ -1,32 +1,51 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
+import { validateTokenWithUserInfo } from "./actions/validate-tokenCAMP/validate-token-camp.action";
 
 export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const path = req.nextUrl.pathname;
 
-  // Si no hay token, permitir acceso a la página de login
+  // Si no hay token, permitir     acceso a la página de login
+  console.log("token desde middlware", token);
+
   if (!token) {
     if (path === "/auth/login") {
       console.log("Acceso permitido a la página de login");
       return NextResponse.next();
     }
 
-    if(path === "/" || path === "/auth"  || path === "/login"){
+    if (path === "/" || path === "/auth" || path === "/login") {
       console.log("Acceso permitido a la página de inicio");
       return NextResponse.redirect(new URL("/auth/login", req.url));
     }
-
-    
 
     console.log("No hay token, redirigiendo a login");
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
-  const { role } = token || {};
+  if (!token.tokenKeycloak) {
+    console.log("Token Keycloak ausente, redirigiendo a login");
 
-  // Redirigir desde la raíz (`/`) según el rol
-  if (path === "/auth/login" || path === "/") {
+    const res = NextResponse.redirect(new URL("/auth/login", req.url));
+    res.cookies.set("next-auth.session-token", "", { maxAge: -1 });
+    res.cookies.set("next-auth.csrf-token", "", { maxAge: -1 });
+    return res;
+  }
+
+  //TODO: MOSTRAR ALERTA DE QUE NO TEIENE PERMISOS PARA ENTRAR
+  const isValidate = await validateTokenWithUserInfo(token.tokenKeycloak!);
+
+  if (!isValidate) {
+    console.log("Token de Camp inválido, redirigiendo a login");
+    const res = NextResponse.redirect(new URL("/auth/login", req.url));
+    res.cookies.set("next-auth.session-token", "", { maxAge: -1 });
+    res.cookies.set("next-auth.csrf-token", "", { maxAge: -1 });
+    return res;
+  }
+
+  const { role } = token || {};
+  if ((path === "/auth/login" || path === "/") && role) {
     console.log("Usuario autenticado, rol:", role);
 
     if (role === "EJECUTIVO") {
@@ -36,11 +55,9 @@ export async function middleware(req: NextRequest) {
     if (role === "SUBGERENTE") {
       return NextResponse.redirect(new URL("/escritorio-subgerente", req.url));
     }
-
-    return NextResponse.redirect(new URL("/dashboard", req.url)); // Redirección por defecto
+    return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
-  // Validar acceso a rutas protegidas
   if (path.startsWith("/escritorio-ejecutivo") && role !== "EJECUTIVO") {
     console.log("Acceso denegado a escritorio-ejecutivo");
     return NextResponse.redirect(new URL("/auth/login", req.url));
@@ -51,7 +68,6 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
-  // Permitir acceso a otras rutas
   return NextResponse.next();
 }
 
@@ -61,7 +77,7 @@ export const config = {
     "/auth",
     "/login",
     "/auth/login",
-    "/escritorio-ejecutivo/:path*", // Aplica en todas las subrutas de escritorio-ejecutivo
-    "/escritorio-subgerente/:path*", // Aplica en todas las subrutas de escritorio-subgerente
+    "/escritorio-ejecutivo/:path*",
+    "/escritorio-subgerente/:path*",
   ],
 };

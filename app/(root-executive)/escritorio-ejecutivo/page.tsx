@@ -1,13 +1,13 @@
 import ButtonTableOpportunities from "@/components/button-table-opportunities/ButtonTableOpportunities";
 import Charts from "@/components/charts/Charts";
-import DrawerOpportunitie from "@/components/drawer-opportunity/DrawerOpportunitie";
+import DrawerOpportunities from "@/components/drawer-opportunity/DrawerOpportunities";
 import Image from "next/image";
 
 // recibir data de endpoint
 
 function DeskExecutivePage() {
   return (
-    <div className="w-full flex flex-col items-center justify-center h-screen space-y-7">
+    <div className="w-full flex flex-col items-center justify-center h-full space-y-7 ">
       <div className="flex items-start justify-start text-left w-full">
         <h1 className="text-2xl font-bold">Oportunidades de mi cartera</h1>
       </div>
@@ -54,7 +54,7 @@ function DeskExecutivePage() {
 
         <div className="w-full flex flex-col items-center justify-center space-y-3">
 
-          <DrawerOpportunitie />
+          <DrawerOpportunities w={"w-full"}/>
           <ButtonTableOpportunities />
         </div>
       </div>

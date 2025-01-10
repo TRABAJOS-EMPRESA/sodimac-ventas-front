@@ -6,13 +6,20 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import FormDrawerAddOpportunity from "../forms/FormDrawerAddOpportunity";
 import { useState } from "react";
-function DrawerOpportunitie() {
+
+
+interface Props {
+  w: string;
+}
+function DrawerOpportunities(props:  Props) {
+
+  const { w } = props;
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
       <Button
-        className="flex shadow-md space-x-2 w-full rounded-full bg-primary-blue hover:bg-blue-500 text-primary-white"
+        className={cn("flex shadow-md space-x-2 w-full rounded-full bg-primary-blue hover:bg-blue-500 text-primary-white", w)}
         onClick={() => setIsOpen(true)}
         aria-label="Abrir menú lateral"
       >
@@ -41,10 +48,7 @@ function DrawerOpportunitie() {
             <h2 className="text-lg font-semibold">Nueva Oportunidad</h2>
           </div>
           <div className="flex-grow p-4 overflow-y-auto">
-            <FormDrawerAddOpportunity />
-
-
-
+            <FormDrawerAddOpportunity  setIsOpen={setIsOpen}/>
           </div>
           <div className="p-4 border-t">
             <Button onClick={() => setIsOpen(false)} className="w-full">
@@ -57,4 +61,4 @@ function DrawerOpportunitie() {
   );
 }
 
-export default DrawerOpportunitie;
+export default DrawerOpportunities;

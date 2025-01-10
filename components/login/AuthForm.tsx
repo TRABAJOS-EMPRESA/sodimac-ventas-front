@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+// import { signIn } from "next-auth/react";
 import { signIn } from "next-auth/react";
 
 interface AuthFormProps<T extends FieldValues> {
@@ -81,8 +82,8 @@ const AuthForm = <T extends FieldValues>({
                         }
                         src={
                           field.name === "password"
-                            ? "/img/icons/lock.png"
-                            : "/img/icons/envelope.png"
+                            ? "/img/icons/login-icons/lock.png"
+                            : "/img/icons/login-icons/envelope.png"
                         }
                         alt="email"
                         className={
