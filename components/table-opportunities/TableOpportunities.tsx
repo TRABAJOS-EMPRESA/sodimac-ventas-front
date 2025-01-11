@@ -44,9 +44,13 @@ interface ColumnConfig {
 }
 
 function TableOpportunities() {
+  // ASI OBTENGO LOS QUERYPARAMS
   const searchParams = useSearchParams();
+
+  // ASI OBTENGO EL QUERY PARAM ESPECIFICO QUE NEICESTO
   const stateFilter = searchParams.get("state");
 
+  // DATA FAKE PARA LA TABLA
   const [columns, setColumns] = useState<ColumnConfig[]>([
     { key: "estado", label: "Estado", visible: true },
     { key: "oportunidadPadre", label: "Oportunidad Padre", visible: true },
@@ -59,6 +63,7 @@ function TableOpportunities() {
     { key: "fechaCierre", label: "Fecha cierre", visible: true },
   ]);
 
+  // USE MEMO POR QUE NO QUEREMOS QUE SE VUELVA A CALCULAR
   const data: Opportunity[] = useMemo(
     () => [
       {
@@ -181,50 +186,61 @@ function TableOpportunities() {
         fechaInicio: "01/01/2024",
         fechaCierre: "01/01/2026",
       },
-    
     ],
     []
   );
 
   const [currentPage, setCurrentPage] = useState(1);
+
+  // VALOS INICIAL PARA LA PAGINACION DE CUANTAS OP SE MOSTRARAN POR CADA PAG
   const itemsPerPage = 5;
 
   const [filteredData, setFilteredData] = useState(data);
+
+  // FILTRO ACTIVO PARA LA TABLA EN BASE A LA COLUMNA QUE SE ESTA FILTRANDO POR ESO KEYOF OPORTUNITY
+  // QUE ES BASICAMENTE CADA VALOR DE LA INTERFACE DE OPORTUNITY
   const [activeFilter, setActiveFilter] = useState<keyof Opportunity | null>(
     null
   );
 
-  // Filtro inicial basado en el query param "state"
+  // FILTRAMOS PRIMERAMENTE POR ELQ UERY PARAMS STATE
   useEffect(() => {
     if (stateFilter) {
+      // PASAMOS EL FILTRO INICIAL A LA TABLA EN ETE CASO SI ES POR INICIAR ESAS MOSTRARA
       setFilteredData(
         data.filter((row) =>
-          row.estado.toLowerCase().includes(stateFilter.toLowerCase().trim().replace('_', ' '))
+          row.estado
+            .toLowerCase()
+            .includes(stateFilter.toLowerCase().trim().replace("_", " "))
         )
       );
     } else {
+      // SI NO HAY FILTRO MUESTRA LA DATA DE TODAS LAS OPP
       setFilteredData(data);
     }
-    setCurrentPage(1); // Reiniciar a la primera página al aplicar el filtro
+    setCurrentPage(1);
   }, [stateFilter, data]);
 
   const handleFilterChange = (key: keyof Opportunity, value: string) => {
+    // SI EL VALOR DEL FILTRO ESTA VACIO, MOSTRAMOS TODOS LOS DATOS
     if (value.trim() === "") {
       setFilteredData(data);
     } else {
+      // SI NO LO QUE CONTENDRA EL STATE ES EL FILTRO QUE SE ESTA REALIZANDO
       setFilteredData(
         data.filter((row) =>
           String(row[key]).toLowerCase().includes(value.toLowerCase())
         )
       );
     }
-    setCurrentPage(1); // Reiniciar a la primera página al filtrar
+    setCurrentPage(1);
   };
 
+  // BORRAMOS LOS FILTROS
   const clearFilter = () => {
     setActiveFilter(null);
     setFilteredData(data);
-    setCurrentPage(1); // Reiniciar a la primera página
+    setCurrentPage(1);
   };
 
   const resetColumns = () => {
@@ -239,7 +255,7 @@ function TableOpportunities() {
     );
   };
 
-  // Calcular paginado en base a los datos filtrados
+  // AQUI CALLCUAMOS EL PAGINADO SEGUN EL FILTRO REALIZADO
   const paginatedFilteredData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -249,7 +265,7 @@ function TableOpportunities() {
 
   return (
     <div className="">
-      {/* Configuración de la tabla */}
+      {/* AUI CONFIGURAMOS LA TABLA SEGUN LAS CONFIG QUE NOS DIGAN */}
       <div className="flex items-center gap-2 bg-gray-100 py-4 pl-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
         <Button
           className="border-2 border-blue-500 text-blue-500 rounded-full font-bold cursor-pointer"
@@ -318,6 +334,9 @@ function TableOpportunities() {
                 column.visible ? (
                   <TableHead key={column.key}>
                     <div className="flex items-center">
+                      {/* ASI ACTIVO EL INPUT 
+                      SI EL ACTIVEFILTER ES IGUAL A LA COLUMNA QUE ESTOY RECORRIENDO
+                      ENTONCES MUESTRO EL INPUT PARA FILTRAR */}
                       {activeFilter === column.key ? (
                         <div className="flex items-center gap-2">
                           <input
@@ -328,6 +347,8 @@ function TableOpportunities() {
                               handleFilterChange(column.key, e.target.value)
                             }
                           />
+
+                          {/* AQUI CIERRO LOS FLTROS */}
                           <X
                             className="cursor-pointer text-red-500"
                             onClick={clearFilter}
@@ -336,6 +357,8 @@ function TableOpportunities() {
                       ) : (
                         <span
                           className="cursor-pointer font-bold"
+                          // AQUI ACTIVO EL FILTRO Y ESO QUIERE DECIR QUE SI HAGO CLICK EN UNA COLUMNA
+                          // SE ACTIVA EL FILTRO Y SE MUESTRA EL INPUT PARA FILTRAR
                           onClick={() => setActiveFilter(column.key)}
                         >
                           {column.label}
@@ -349,35 +372,34 @@ function TableOpportunities() {
             </TableRow>
           </TableHeader>
           <TableBody>
-          {paginatedFilteredData.map((row) => (
-  <TableRow key={row.id}>
-    {columns
-      .filter((col) => col.visible)
-      .map((column) => (
-        <TableCell key={column.key}>
-          {column.key === "estado" ? (
-            <Badge
-              className={
-                {
-                  "POR INICIAR": "bg-orange-500 text-white",
-                  "POR VENCER": "bg-red-500 text-white",
-                  "EN CURSO": "bg-blue-500 text-white",
-                  "TERMINADA": "bg-green-500 text-white",
-                }[row.estado] || "bg-gray-300 text-black" // Color por defecto
-              }
-            >
-              {row.estado}
-            </Badge>
-          ) : column.key === "ingresos" ? (
-            `$${row[column.key].toLocaleString()}`
-          ) : (
-            row[column.key]
-          )}
-        </TableCell>
-      ))}
-  </TableRow>
-))}
-
+            {paginatedFilteredData.map((row) => (
+              <TableRow key={row.id}>
+                {columns
+                  .filter((col) => col.visible)
+                  .map((column) => (
+                    <TableCell key={column.key}>
+                      {column.key === "estado" ? (
+                        <Badge
+                          className={
+                            {
+                              "POR INICIAR": "bg-orange-500 text-white",
+                              "POR VENCER": "bg-red-500 text-white",
+                              "EN CURSO": "bg-blue-500 text-white",
+                              TERMINADA: "bg-green-500 text-white",
+                            }[row.estado] || "bg-gray-300 text-black" // Color por defecto
+                          }
+                        >
+                          {row.estado}
+                        </Badge>
+                      ) : column.key === "ingresos" ? (
+                        `$${row[column.key].toLocaleString()}`
+                      ) : (
+                        row[column.key]
+                      )}
+                    </TableCell>
+                  ))}
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
