@@ -1,16 +1,15 @@
 import { NextAuthOptions } from "next-auth";
 import KeycloakProvider from "next-auth/providers/keycloak";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { getRoleUser } from "@/actions/user/get-role-user.action";
 
 export const authOptions: NextAuthOptions = {
   providers: [
-    
-    
     KeycloakProvider({
       name: "keycloak",
       clientId: process.env.KEYCLOAK_CLIENT_ID as string,
       clientSecret: process.env.KEYCLOAK_CLIENT_SECRET || "",
-      issuer: process.env.KEYCLOAK_ISSUER 
+      issuer: process.env.KEYCLOAK_ISSUER,
     }),
 
     CredentialsProvider({
@@ -62,49 +61,38 @@ export const authOptions: NextAuthOptions = {
       if (user && account?.provider === "keycloak") {
         // LOGICA DE OBTENCION DE ROL EN KEYCLOAK
         // TRAER LA RESPUESTA DE BACKEND RESPECTO AL ROL O PERFIL
-        const uuid = account.providerAccountId;
-        console.log('ENTROOOOOO A CALLBACK');
-      
-        // console.log('account', account);        
+        // const uuid = account.providerAccountId;
+        // console.log("ENTROOOOOO A CALLBACK", user.email);
+        // console.log("ACCOUNT", account);
+
+        // console.log('account', account);
         // Petición POST para obtener datos adicionales
         try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/loginCAMP`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ campUuid: uuid }),
-            }
-          );
+          const response = await getRoleUser(user.email);
 
-          if (response.ok) {
-            // const additionalData = await response.json();
-
-            //datos adicionales al token
-            token.role = "EJECUTIVO";
-            token.campUuid = uuid as unknown as string;
-          } else {
-            console.error(
-              "Error al obtener datos adicionales:",
-              response.statusText
+          if ("error" in response) {
+            console.log(
+              "Error al obtener datos adicionalessssss:",
+              response.error
             );
+          } else {
+            console.log("RESPONSE", response);
+
+            token.role = response.role;
+            token.campUuid = response.campUuid;
+            token.id = user.id;
+            token.name = user.name;
+            token.email = user.email;
+            token.tokenKeycloak = account.access_token;
+            token.provider = account?.provider;
           }
         } catch (error) {
           console.error("Error obteniendo datos adicionales:", error);
         }
 
         // console.log("user desde jwt", user);
-
-        token.id = user.id;
-        // TODO: QUITAR ESTA ASIGNACION Y USAR EN RESPUESSTA DE ENDPOINT DE JEAN
-        token.role = "EJECUTIVO";
-        token.name = user.name;
-        token.email = user.email;
-        token.campUuid = uuid;
-        token.tokenKeycloak = account.access_token;
-        token.provider = account?.provider;
       } else if (user && account?.provider === "credentials") {
-        console.log("user desde jwt", user);
+        // console.log("user desde jwt", user);
 
         token.id = user.id;
         token.name = user.name;
@@ -119,14 +107,14 @@ export const authOptions: NextAuthOptions = {
       //   console.log("account", account);
       //   console.log("profile", profile);
 
-      console.log("token desde JWT", token);
+      // console.log("token desde JWT", token);
 
       return token;
     },
 
     // AQUI MANEJAMOS LA SESION
     async session({ session, token }) {
-      console.log("token desde sesion", token);
+      // console.log("token desde sesion", token);
 
       if (token && token.provider === "keycloak") {
         session.user = {
@@ -148,7 +136,7 @@ export const authOptions: NextAuthOptions = {
         };
       }
 
-      console.log("session deesde sesion", session);
+      // console.log("session deesde sesion", session);
 
       return session;
     },
@@ -159,7 +147,7 @@ export const authOptions: NextAuthOptions = {
     maxAge: 60 * 60,
   },
   pages: {
-    signIn: '/auth/login', 
+    signIn: "/auth/login",
   },
 };
 

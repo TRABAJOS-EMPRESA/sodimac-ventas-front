@@ -2,10 +2,17 @@ import ButtonTableOpportunities from "@/components/button-table-opportunities/Bu
 import Charts from "@/components/charts/Charts";
 import DrawerOpportunities from "@/components/drawer-opportunity/DrawerOpportunities";
 import Image from "next/image";
+import { auth  } from "@/utils/auth";
 
 // recibir data de endpoint
 
-function DeskExecutivePage() {
+async function DeskExecutivePage() {
+
+  const session = await auth()
+
+  
+  
+
   return (
     <div className="w-full flex flex-col items-center justify-center h-full space-y-7 ">
       <div className="flex items-start justify-start text-left w-full">
@@ -28,7 +35,7 @@ function DeskExecutivePage() {
         <Charts
           opportunitiesStart={{
             id: "1",
-            state: "por iniciar",
+            state: "inicio",
             labels: ["Ago", "Sep", "Oct", "Nov", "Dic"],
             data: [12, 19, 3, 5, 2, 3],
             numberOpportunities: "120",
@@ -36,7 +43,7 @@ function DeskExecutivePage() {
           }}
           ongoingOpportunity={{
             id: "2",
-            state: "en curso",
+            state: "cotizada",
             labels: ["Ago", "Sep", "Oct", "Nov", "Dic"],
             data: [10, 23, 35, 42, 13, 12],
             numberOpportunities: "5",
@@ -50,11 +57,39 @@ function DeskExecutivePage() {
             percentage: "50%",
             numberOpportunities: "19000",
           }}
+          
+        />
+        <Charts
+          opportunitiesStart={{
+            id: "1",
+            state: "inicio",
+            labels: ["Ago", "Sep", "Oct", "Nov", "Dic"],
+            data: [12, 19, 3, 5, 2, 3],
+            numberOpportunities: "120",
+            percentage: "+12%",
+          }}
+          ongoingOpportunity={{
+            id: "2",
+            state: "cotizada",
+            labels: ["Ago", "Sep", "Oct", "Nov", "Dic"],
+            data: [10, 23, 35, 42, 13, 12],
+            numberOpportunities: "5",
+            percentage: "+12%",
+          }}
+          opportunitiesToEnd={{
+            state: "por vencer ",
+            id: "3",
+            data: [50, 50],
+            labels: [""],
+            percentage: "50%",
+            numberOpportunities: "19000",
+          }}
+          
         />
 
         <div className="w-full flex flex-col items-center justify-center space-y-3">
 
-          <DrawerOpportunities w={"w-full"}/>
+          <DrawerOpportunities w={"w-full"} session={session!}/>
           <ButtonTableOpportunities />
         </div>
       </div>

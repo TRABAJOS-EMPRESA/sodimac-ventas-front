@@ -1,13 +1,12 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
-import { validateTokenWithUserInfo } from "./actions/validate-tokenCAMP/validate-token-camp.action";
+import { validateTokenWithUserInfo } from "./actions/user/validate-token-camp.action";
 
 export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const path = req.nextUrl.pathname;
 
-  // Si no hay token, permitir     acceso a la página de login
-  console.log("token desde middlware", token);
+  
 
   if (!token) {
     if (path === "/auth/login") {
@@ -48,22 +47,22 @@ export async function middleware(req: NextRequest) {
   if ((path === "/auth/login" || path === "/") && role) {
     console.log("Usuario autenticado, rol:", role);
 
-    if (role === "EJECUTIVO") {
+    if (role === "ejecutivo") {
       return NextResponse.redirect(new URL("/escritorio-ejecutivo", req.url));
     }
 
-    if (role === "SUBGERENTE") {
+    if (role === "subgerente") {
       return NextResponse.redirect(new URL("/escritorio-subgerente", req.url));
     }
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
-  if (path.startsWith("/escritorio-ejecutivo") && role !== "EJECUTIVO") {
+  if (path.startsWith("/escritorio-ejecutivo") && role !== "ejecutivo") {
     console.log("Acceso denegado a escritorio-ejecutivo");
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
-  if (path.startsWith("/escritorio-subgerente") && role !== "SUBGERENTE") {
+  if (path.startsWith("/escritorio-subgerente") && role !== "subgerente") {
     console.log("Acceso denegado a escritorio-subgerente");
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }

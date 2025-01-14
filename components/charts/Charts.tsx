@@ -47,7 +47,7 @@ function Charts(props: ChartsDeskData) {
           dataLineChart={opportunitiesStart?.data || []}
         />
       ),
-      title: "Op. hijas por iniciar",
+      title: "Op. hijas iniciadas",
       percentage: opportunitiesStart?.percentage || "0%",
       numberOpportunities: opportunitiesStart?.numberOpportunities || "0",
     },
@@ -60,7 +60,7 @@ function Charts(props: ChartsDeskData) {
           dataLineChart={ongoingOpportunity?.data || []}
         />
       ),
-      title: "Op. hijas en curso",
+      title: "Op. hijas cotizadas",
       percentage: ongoingOpportunity?.percentage || "0%",
       numberOpportunities: ongoingOpportunity?.numberOpportunities || "0",
     },

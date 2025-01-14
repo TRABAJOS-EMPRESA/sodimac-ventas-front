@@ -6,20 +6,27 @@ import { cn } from "@/lib/utils";
 import Image from "next/image";
 import FormDrawerAddOpportunity from "../forms/FormDrawerAddOpportunity";
 import { useState } from "react";
-
+import { SessionProvider } from "next-auth/react";
+import { Session } from "next-auth";
 
 interface Props {
   w: string;
+  session: Session;
 }
-function DrawerOpportunities(props:  Props) {
+function DrawerOpportunities(props: Props) {
+  const { w, session } = props;
 
-  const { w } = props;
+  // console.log( 'userId', userId);
+
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
       <Button
-        className={cn("flex shadow-md space-x-2 w-full rounded-full bg-primary-blue hover:bg-blue-500 text-primary-white", w)}
+        className={cn(
+          "flex shadow-md space-x-2 w-full rounded-full bg-primary-blue hover:bg-blue-500 text-primary-white",
+          w
+        )}
         onClick={() => setIsOpen(true)}
         aria-label="Abrir menú lateral"
       >
@@ -48,7 +55,9 @@ function DrawerOpportunities(props:  Props) {
             <h2 className="text-lg font-semibold">Nueva Oportunidad</h2>
           </div>
           <div className="flex-grow p-4 overflow-y-auto">
-            <FormDrawerAddOpportunity  setIsOpen={setIsOpen}/>
+            <SessionProvider session={session}>
+              <FormDrawerAddOpportunity setIsOpen={setIsOpen} />
+            </SessionProvider>
           </div>
           <div className="p-4 border-t">
             <Button onClick={() => setIsOpen(false)} className="w-full">

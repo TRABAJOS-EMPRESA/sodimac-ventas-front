@@ -3,16 +3,16 @@
 import LeftSideBar from "@/components/navigation/left-sidebar/LeftSideBar";
 import NavBar from "@/components/navigation/nav/NavBar";
 import { leftSideBarMenuExecutive } from "@/constants/menus";
-import { auth } from "@/utils/auth";
+// import { auth } from "@/utils/auth";
 
 export default async function RootExecutiveLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  // const session = await auth();
 
-  console.log("session", session);
+  // console.log("session", session);
 
   // if (session) {
   //   const isValidate = await validateTokenWithUserInfo(session.user.tokenKeycloak!);

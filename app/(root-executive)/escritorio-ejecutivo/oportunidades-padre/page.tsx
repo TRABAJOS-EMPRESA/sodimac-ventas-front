@@ -1,9 +1,12 @@
-import React from 'react'
+import { getOpportunitiesAll } from "@/actions/opportunities/get-opportunities-all.action";
+import React from "react";
 
-function OportunitiesFatherPage() {
-  return (
-    <div className='h-full w-full'>OportunitiesFatherPage</div>
-  )
+async function OportunitiesFatherPage() {
+  const opportunities = await getOpportunitiesAll();
+
+  console.log("opportunities", opportunities);
+
+  return <div className="h-full w-full">OportunitiesFatherPage</div>;
 }
 
-export default OportunitiesFatherPage
+export default OportunitiesFatherPage;

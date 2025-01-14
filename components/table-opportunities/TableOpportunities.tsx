@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   Table,
@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/table";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogHeader,
@@ -22,9 +21,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
-import { Settings2, FileDown, FilterX, X } from "lucide-react";
+import { Settings2, FileDown, FilterX, X, Eye } from "lucide-react";
+import { getOpportunitiesAll } from "@/actions/opportunities/get-opportunities-all.action";
+import { Skeleton } from "../ui/skeleton";
+import DialogTableOpportunityForm from "./dialogs-table-oportunities/DialogTableOpportunityForm";
 
-interface Opportunity {
+export interface Opportunity {
   id: string;
   estado: string;
   oportunidadPadre: string;
@@ -37,20 +39,16 @@ interface Opportunity {
   fechaCierre: string;
 }
 
-interface ColumnConfig {
+export interface ColumnConfig {
   key: keyof Opportunity;
   label: string;
   visible: boolean;
 }
 
 function TableOpportunities() {
-  // ASI OBTENGO LOS QUERYPARAMS
   const searchParams = useSearchParams();
-
-  // ASI OBTENGO EL QUERY PARAM ESPECIFICO QUE NEICESTO
   const stateFilter = searchParams.get("state");
 
-  // DATA FAKE PARA LA TABLA
   const [columns, setColumns] = useState<ColumnConfig[]>([
     { key: "estado", label: "Estado", visible: true },
     { key: "oportunidadPadre", label: "Oportunidad Padre", visible: true },
@@ -63,183 +61,88 @@ function TableOpportunities() {
     { key: "fechaCierre", label: "Fecha cierre", visible: true },
   ]);
 
-  // USE MEMO POR QUE NO QUEREMOS QUE SE VUELVA A CALCULAR
-  const data: Opportunity[] = useMemo(
-    () => [
-      {
-        id: "1",
-        estado: "POR INICIAR",
-        oportunidadPadre: "LAS BRISAS DE LAMPA",
-        oportunidadHija: "PUERTAS",
-        tipoProyecto: "INSTITUCIONAL",
-        nombreCliente: "EURO INMOBILIA",
-        rut: "11.111.111-1",
-        ingresos: 290000000,
-        fechaInicio: "01/01/2024",
-        fechaCierre: "01/01/2026",
-      },
-      {
-        id: "2",
-        estado: "EN CURSO",
-        oportunidadPadre: "LAS BRISAS DE LAMPA",
-        oportunidadHija: "PUERTAS",
-        tipoProyecto: "INSTITUCIONAL",
-        nombreCliente: "EURO INMOBILIA",
-        rut: "11.111.111-1",
-        ingresos: 290000000,
-        fechaInicio: "01/01/2024",
-        fechaCierre: "01/01/2026",
-      },
-      {
-        id: "3",
-        estado: "POR INICIAR",
-        oportunidadPadre: "LAS BRISAS DE LAMPA",
-        oportunidadHija: "PUERTAS",
-        tipoProyecto: "INSTITUCIONAL",
-        nombreCliente: "EURO INMOBILIA",
-        rut: "11.111.111-1",
-        ingresos: 290000000,
-        fechaInicio: "01/01/2024",
-        fechaCierre: "01/01/2026",
-      },
-      {
-        id: "4",
-        estado: "POR INICIAR",
-        oportunidadPadre: "LAS BRISAS DE LAMPA",
-        oportunidadHija: "PUERTAS",
-        tipoProyecto: "INSTITUCIONAL",
-        nombreCliente: "EURO INMOBILIA",
-        rut: "11.111.111-1",
-        ingresos: 290000000,
-        fechaInicio: "01/01/2024",
-        fechaCierre: "01/01/2026",
-      },
-      {
-        id: "5",
-        estado: "POR VENCER",
-        oportunidadPadre: "LAS BRISAS DE LAMPA",
-        oportunidadHija: "PUERTAS",
-        tipoProyecto: "INSTITUCIONAL",
-        nombreCliente: "EURO INMOBILIA",
-        rut: "11.111.111-1",
-        ingresos: 290000000,
-        fechaInicio: "01/01/2024",
-        fechaCierre: "01/01/2026",
-      },
-      {
-        id: "6",
-        estado: "EN CURSO",
-        oportunidadPadre: "LAS BRISAS DE LAMPA",
-        oportunidadHija: "PUERTAS",
-        tipoProyecto: "INSTITUCIONAL",
-        nombreCliente: "EURO INMOBILIA",
-        rut: "11.111.111-1",
-        ingresos: 290000000,
-        fechaInicio: "01/01/2024",
-        fechaCierre: "01/01/2026",
-      },
-      {
-        id: "7",
-        estado: "EN CURSO",
-        oportunidadPadre: "LAS BRISAS DE LAMPA",
-        oportunidadHija: "PUERTAS",
-        tipoProyecto: "INSTITUCIONAL",
-        nombreCliente: "EURO INMOBILIA",
-        rut: "11.111.111-1",
-        ingresos: 290000000,
-        fechaInicio: "01/01/2024",
-        fechaCierre: "01/01/2026",
-      },
-      {
-        id: "8",
-        estado: "POR VENCER",
-        oportunidadPadre: "LAS BRISAS DE LAMPA",
-        oportunidadHija: "PUERTAS",
-        tipoProyecto: "INSTITUCIONAL",
-        nombreCliente: "EURO INMOBILIA",
-        rut: "11.111.111-1",
-        ingresos: 290000000,
-        fechaInicio: "01/01/2024",
-        fechaCierre: "01/01/2026",
-      },
-      {
-        id: "9",
-        estado: "POR VENCER",
-        oportunidadPadre: "LAS BRISAS DE LAMPA",
-        oportunidadHija: "PUERTAS",
-        tipoProyecto: "INSTITUCIONAL",
-        nombreCliente: "EURO INMOBILIA",
-        rut: "11.111.111-1",
-        ingresos: 290000000,
-        fechaInicio: "01/01/2024",
-        fechaCierre: "01/01/2026",
-      },
-      {
-        id: "10",
-        estado: "POR VENCER",
-        oportunidadPadre: "LAS BRISAS DE LAMPA",
-        oportunidadHija: "PUERTAS",
-        tipoProyecto: "INSTITUCIONAL",
-        nombreCliente: "EURO INMOBILIA",
-        rut: "11.111.111-1",
-        ingresos: 290000000,
-        fechaInicio: "01/01/2024",
-        fechaCierre: "01/01/2026",
-      },
-    ],
-    []
-  );
-
+  const [data, setData] = useState<Opportunity[]>([]);
+  const [filteredData, setFilteredData] = useState<Opportunity[]>([]);
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-
-  // VALOS INICIAL PARA LA PAGINACION DE CUANTAS OP SE MOSTRARAN POR CADA PAG
-  const itemsPerPage = 5;
-
-  const [filteredData, setFilteredData] = useState(data);
-
-  // FILTRO ACTIVO PARA LA TABLA EN BASE A LA COLUMNA QUE SE ESTA FILTRANDO POR ESO KEYOF OPORTUNITY
-  // QUE ES BASICAMENTE CADA VALOR DE LA INTERFACE DE OPORTUNITY
+  const itemsPerPage = 10;
   const [activeFilter, setActiveFilter] = useState<keyof Opportunity | null>(
     null
   );
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedOpportunity, setSelectedOpportunity] =
+    useState<Opportunity | null>(null);
 
-  // FILTRAMOS PRIMERAMENTE POR ELQ UERY PARAMS STATE
   useEffect(() => {
-    if (stateFilter) {
-      // PASAMOS EL FILTRO INICIAL A LA TABLA EN ETE CASO SI ES POR INICIAR ESAS MOSTRARA
-      setFilteredData(
-        data.filter((row) =>
-          row.estado
-            .toLowerCase()
-            .includes(stateFilter.toLowerCase().trim().replace("_", " "))
-        )
-      );
-    } else {
-      // SI NO HAY FILTRO MUESTRA LA DATA DE TODAS LAS OPP
-      setFilteredData(data);
-    }
-    setCurrentPage(1);
-  }, [stateFilter, data]);
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const response = await getOpportunitiesAll();
+
+        if (Array.isArray(response)) {
+          const mappedData = response.map((opportunity) => ({
+            id: opportunity.id,
+            estado: opportunity.status.status,
+            oportunidadPadre: opportunity.opportunityName,
+            oportunidadHija: opportunity.opportunityName,
+            tipoProyecto: opportunity.projectType,
+            nombreCliente: opportunity.client.name,
+            rut: opportunity.client.rut || "",
+            ingresos: opportunity.availableBudget,
+            fechaInicio: new Date(opportunity.startDate).toLocaleDateString(),
+            fechaCierre: new Date(opportunity.endDate).toLocaleDateString(),
+          }));
+
+          if (stateFilter) {
+            const filtered = mappedData.filter((opportunity) =>
+              opportunity.estado
+                .toLowerCase()
+                .includes(stateFilter.toLowerCase())
+            );
+            setFilteredData(filtered);
+          } else {
+            setFilteredData(mappedData);
+          }
+          setData(mappedData);
+        }
+      } catch (error) {
+        console.error("Error al cargar oportunidades:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [stateFilter]);
 
   const handleFilterChange = (key: keyof Opportunity, value: string) => {
-    // SI EL VALOR DEL FILTRO ESTA VACIO, MOSTRAMOS TODOS LOS DATOS
-    if (value.trim() === "") {
-      setFilteredData(data);
-    } else {
-      // SI NO LO QUE CONTENDRA EL STATE ES EL FILTRO QUE SE ESTA REALIZANDO
-      setFilteredData(
-        data.filter((row) =>
-          String(row[key]).toLowerCase().includes(value.toLowerCase())
+    const sourceData = stateFilter
+      ? data.filter((row) =>
+          row.estado.toLowerCase().includes(stateFilter.toLowerCase())
         )
+      : data;
+
+    if (value.trim() === "") {
+      setFilteredData(sourceData);
+    } else {
+      const filtered = sourceData.filter((row) =>
+        String(row[key]).toLowerCase().includes(value.toLowerCase())
       );
+      setFilteredData(filtered);
     }
+
     setCurrentPage(1);
   };
 
-  // BORRAMOS LOS FILTROS
   const clearFilter = () => {
     setActiveFilter(null);
-    setFilteredData(data);
+    const resetData = stateFilter
+      ? data.filter((row) =>
+          row.estado.toLowerCase().includes(stateFilter.toLowerCase())
+        )
+      : data;
+
+    setFilteredData(resetData);
     setCurrentPage(1);
   };
 
@@ -255,7 +158,6 @@ function TableOpportunities() {
     );
   };
 
-  // AQUI CALLCUAMOS EL PAGINADO SEGUN EL FILTRO REALIZADO
   const paginatedFilteredData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
@@ -263,9 +165,20 @@ function TableOpportunities() {
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
+  const handleOpenDialog = (
+    opportunity: React.SetStateAction<Opportunity | null>
+  ) => {
+    setSelectedOpportunity(opportunity);
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setSelectedOpportunity(null);
+    setIsDialogOpen(false);
+  };
+
   return (
     <div className="">
-      {/* AUI CONFIGURAMOS LA TABLA SEGUN LAS CONFIG QUE NOS DIGAN */}
       <div className="flex items-center gap-2 bg-gray-100 py-4 pl-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
         <Button
           className="border-2 border-blue-500 text-blue-500 rounded-full font-bold cursor-pointer"
@@ -304,18 +217,6 @@ function TableOpportunities() {
                 </div>
               ))}
             </div>
-            <div className="flex w-full flex-row items-end justify-end mt-4 gap-3 ">
-              <Button
-                className="bg-gray-500 rounded-full text-primary-white cursor-pointer"
-                onClick={() => resetColumns()}
-              >
-                Cancelar
-              </Button>
-
-              <DialogClose className=" cursor-pointer bg-primary-blue rounded-full text-primary-white py-[6px] px-3">
-                Guardar Cambios
-              </DialogClose>
-            </div>
           </DialogContent>
         </Dialog>
 
@@ -325,7 +226,6 @@ function TableOpportunities() {
         </Button>
       </div>
 
-      {/* Tabla con datos */}
       <div className="rounded-md border">
         <Table>
           <TableHeader className="bg-gray-100">
@@ -334,9 +234,6 @@ function TableOpportunities() {
                 column.visible ? (
                   <TableHead key={column.key}>
                     <div className="flex items-center">
-                      {/* ASI ACTIVO EL INPUT 
-                      SI EL ACTIVEFILTER ES IGUAL A LA COLUMNA QUE ESTOY RECORRIENDO
-                      ENTONCES MUESTRO EL INPUT PARA FILTRAR */}
                       {activeFilter === column.key ? (
                         <div className="flex items-center gap-2">
                           <input
@@ -347,8 +244,6 @@ function TableOpportunities() {
                               handleFilterChange(column.key, e.target.value)
                             }
                           />
-
-                          {/* AQUI CIERRO LOS FLTROS */}
                           <X
                             className="cursor-pointer text-red-500"
                             onClick={clearFilter}
@@ -357,8 +252,6 @@ function TableOpportunities() {
                       ) : (
                         <span
                           className="cursor-pointer font-bold"
-                          // AQUI ACTIVO EL FILTRO Y ESO QUIERE DECIR QUE SI HAGO CLICK EN UNA COLUMNA
-                          // SE ACTIVA EL FILTRO Y SE MUESTRA EL INPUT PARA FILTRAR
                           onClick={() => setActiveFilter(column.key)}
                         >
                           {column.label}
@@ -372,39 +265,56 @@ function TableOpportunities() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedFilteredData.map((row) => (
-              <TableRow key={row.id}>
-                {columns
-                  .filter((col) => col.visible)
-                  .map((column) => (
-                    <TableCell key={column.key}>
-                      {column.key === "estado" ? (
-                        <Badge
-                          className={
-                            {
-                              "POR INICIAR": "bg-orange-500 text-white",
-                              "POR VENCER": "bg-red-500 text-white",
-                              "EN CURSO": "bg-blue-500 text-white",
-                              TERMINADA: "bg-green-500 text-white",
-                            }[row.estado] || "bg-gray-300 text-black" // Color por defecto
-                          }
-                        >
-                          {row.estado}
-                        </Badge>
-                      ) : column.key === "ingresos" ? (
-                        `$${row[column.key].toLocaleString()}`
-                      ) : (
-                        row[column.key]
-                      )}
+            {loading
+              ? Array.from({ length: 5 }).map((_, index) => (
+                  <TableRow key={index}>
+                    {Array.from({ length: columns.length }).map((_, idx) => (
+                      <TableCell key={idx}>
+                        <Skeleton className="h-4 w-full rounded bg-gray-200 animate-pulse" />
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              : paginatedFilteredData.map((row) => (
+                  <TableRow key={row.id}>
+                    {columns
+                      .filter((col) => col.visible)
+                      .map((column) => (
+                        <TableCell key={column.key}>
+                          {column.key === "estado" ? (
+                            <Badge
+                              className={
+                                {
+                                  inicio: "bg-orange-500 text-white",
+                                  "POR VENCER": "bg-red-500 text-white",
+                                  cotizada: "bg-blue-500 text-white",
+                                  TERMINADA: "bg-green-500 text-white",
+                                }[row.estado] || "bg-gray-300 text-black"
+                              }
+                            >
+                              {row.estado}
+                            </Badge>
+                          ) : column.key === "ingresos" ? (
+                            `$${row[column.key].toLocaleString()}`
+                          ) : (
+                            row[column.key]
+                          )}
+                        </TableCell>
+                      ))}
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleOpenDialog(row)}
+                      >
+                        <Eye className="h-4 w-4 text-blue-500" />
+                      </Button>
                     </TableCell>
-                  ))}
-              </TableRow>
-            ))}
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
       </div>
 
-      {/* Controles de paginación */}
       <div className="flex justify-between items-center py-4">
         <Button
           disabled={currentPage === 1}
@@ -424,6 +334,12 @@ function TableOpportunities() {
           Siguiente
         </Button>
       </div>
+      {isDialogOpen && selectedOpportunity && (
+        <DialogTableOpportunityForm
+          opportunity={selectedOpportunity!}
+          onClose={handleCloseDialog}
+        />
+      )}
     </div>
   );
 }

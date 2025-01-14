@@ -21,9 +21,9 @@ export const opportunitySchema = z.object({
   clientName: z.string().min(2, {
     message: "El nombre del cliente debe tener al menos 2 caracteres.",
   }),
-  clientRut: z.string().regex(/^\d{7,8}-[\dkK]$/, {
-    message: "RUT inválido. Formato: 12345678-9",
-  }),
+  // clientRut: z.string().regex(/^\d{7,8}-[\dkK]$/, {
+  //   message: "RUT inválido. Formato: 12345678-9",
+  // }),
   address: z.string().min(5, {
     message: "La dirección debe tener al menos 5 caracteres.",
   }),
@@ -67,4 +67,31 @@ export const opportunitySchema = z.object({
 })
 
 export type OpportunityFormValues = z.infer<typeof opportunitySchema>
+
+
+
+
+export const dialogTableOpportunityFormSchema = z.object({
+  startDate: z.date({
+    required_error: "La fecha de inicio es requerida",
+  }),
+  endDate: z.date({
+    required_error: "La fecha de cierre es requerida",
+  }),
+  amount: z.string().min(1, "El monto es requerido"),
+  description: z.string().max(300, "La descripción no puede exceder 300 caracteres"),
+  files: z.array(z.object({
+    name: z.string(),
+    size: z.number(),
+    url: z.string(),
+  })).optional(),
+  comments: z.array(z.object({
+    text: z.string(),
+    date: z.date(),
+  })).optional(),
+})
+
+export type DialogTableOpportunityFormSchema = z.infer<typeof dialogTableOpportunityFormSchema>
+
+
 

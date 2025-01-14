@@ -28,15 +28,26 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { cn } from "@/lib/utils";
+import { cn, convertToExcelDate } from "@/lib/utils";
 import { OpportunityFormValues, opportunitySchema } from "@/lib/validations";
 import { format } from "date-fns";
+import { useEffect, useState } from "react";
+import { getProjectTypes } from "@/actions/project-types/get-project-types.action";
+import { ProjectType } from "@/interfaces/project-types/project-types.interface";
+import { getStores } from "@/actions/stores/get-stores.action";
+import { GetStoresResp } from "@/interfaces/stores/store.interface";
+import { getRegions } from "@/actions/regions/get-regions.action";
+import {
+  Commune,
+  GetRegionsResp,
+} from "@/interfaces/regions/regions.interface";
+import { Contact, GetClientResp } from "@/interfaces/client/client.interface";
+import { getClients } from "@/actions/clients/get-clients-action.action";
+import { useSession } from "next-auth/react";
+import { createOpportunity } from "@/actions/create-opportunity/create-opportunity.action";
+import { CreateOpportunityRequest } from "@/interfaces/opportunities/create-oportunity.interface";
 
 // Mock data - replace with actual data from your API
-const regions = ["Metropolitana", "Valparaíso", "Biobío"];
-const communes = ["Santiago", "Providencia", "Las Condes"];
-const projectTypes = ["Comercial", "Residencial", "Industrial"];
-const stores = ["Tienda 1", "Tienda 2", "Tienda 3"];
 
 interface Props {
   setIsOpen: (isOpen: boolean) => void;
@@ -45,12 +56,32 @@ interface Props {
 function FormDrawerAddOpportunity(props: Props) {
   const { setIsOpen } = props;
 
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+
+  console.log('userid -->>>>>>', userId);
+  
+
+  const [projectTypes, setProjectTypes] = useState<ProjectType[]>([]);
+  const [stores, setStores] = useState<GetStoresResp[]>([]);
+  const [regions, setRegions] = useState<GetRegionsResp[]>([]);
+  const [communes, setCommunes] = useState<Commune[]>([]);
+  const [clients, setClients] = useState<GetClientResp[]>([]);
+  const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
+
+  const [filteredClients, setFilteredClients] = useState<GetClientResp[]>([]);
+  const [inputValue, setInputValue] = useState(""); // Valor visible en el input
+  const [searchTerm, setSearchTerm] = useState(""); // Término de búsqueda
+
+  console.log("userId", userId);
+  
+
   const form = useForm<OpportunityFormValues>({
     resolver: zodResolver(opportunitySchema),
     defaultValues: {
-      opportunityName: "", 
+      opportunityName: "",
       clientName: "",
-      clientRut: "",
+      // clientRut: "",
       address: "",
       region: "",
       commune: "",
@@ -58,19 +89,153 @@ function FormDrawerAddOpportunity(props: Props) {
       phone: "",
       email: "",
       projectType: "",
-      income: undefined, 
+      income: "0",
       store: "",
-      startDate: undefined, 
+      startDate: undefined,
       endDate: undefined,
       description: "",
     },
   });
-  
 
-  function onSubmit(data: OpportunityFormValues) {
-    console.log(data);
-    // Handle form submission
+  async function onSubmit(data: OpportunityFormValues) {
+    const mappedData = {
+      opportunityName: data.opportunityName,
+      workDirection: data.address,
+      regionId:
+        regions.find((region) => region.name === data.region)?.id || null,
+      communeId:
+        communes.find((commune) => commune.id === data.commune)?.id || null,
+      storeId: stores.find((store) => store.name === data.store)?.id || null,
+      projectTypeId:
+        projectTypes.find((type) => type.name === data.projectType)?.id || null,
+      productLineId:
+        projectTypes.find((type) => type.name === data.projectType)?.id || null,
+      executiveId: userId,
+      clientId:
+        clients.find((client) => client.name === data.clientName)?.id || null,
+      contactIds:
+        clients
+          .find((client) => client.name === data.clientName)
+          ?.contacts.map((c) => c.id) || null,
+      availableBudget: parseInt(data.income),
+      startDate: data.startDate
+        ? convertToExcelDate(new Date(data.startDate))
+        : null,
+      endDate: data.endDate ? convertToExcelDate(new Date(data.endDate)) : null,
+      description: data.description,
+      statusId: "ef31d320-7150-42fc-a6a9-532f4e64ee26",
+      salesTeam: "LORENA VERONICA RODRIGUEZ DIAZ",
+      salesMethod: "venta general",
+    };
+
+    // console.log("Mapped Data:", mappedData);
+
+    const objectCreateOp: CreateOpportunityRequest = {
+      opportunityName: mappedData.opportunityName,
+      workDirection: mappedData.workDirection,
+      regionId: mappedData.regionId!,
+      communeId: mappedData.communeId!,
+      storeId: mappedData.storeId!,
+      projectTypeId: mappedData.projectTypeId!,
+      productLineId: mappedData.productLineId!,
+      executiveId: mappedData.executiveId!,
+      clientId: mappedData.clientId!,
+      contactIds: mappedData.contactIds!,
+      availableBudget: mappedData.availableBudget,
+      startDate: mappedData.startDate!,
+      endDate: mappedData.endDate!,
+      description: mappedData.description,
+      statusId: mappedData.statusId,
+      salesTeam: mappedData.salesTeam,
+      salesMethod: mappedData.salesMethod,
+    };
+
+    // console.log("OBJECT Data:", objectCreateOp);
+
+    try {
+      const resp = await createOpportunity(objectCreateOp);
+      if ("error" in resp) {
+        console.error("Error creating opportunity:");
+      } else {
+        console.log("Opportunity created successfully:", resp);
+      }
+    } catch (error) {
+      console.error("Unexpected error:", error);
+    }
   }
+
+  useEffect(() => {
+    const handleGetData = async () => {
+      try {
+        const [projectTypesResp, storesResp, regionsResp, clientsResp] =
+          await Promise.all([
+            getProjectTypes(),
+            getStores(),
+            getRegions(),
+            getClients(),
+          ]);
+
+        // Proyectos
+        if (Array.isArray(projectTypesResp)) {
+          setProjectTypes(projectTypesResp);
+        } else {
+          console.error(
+            "Error al obtener los tipos de proyecto desde componente",
+            projectTypesResp
+          );
+        }
+
+        // Tiendas
+        if (Array.isArray(storesResp)) {
+          const uniqueStores = storesResp.filter(
+            (store, index, self) =>
+              index === self.findIndex((s) => s.name === store.name)
+          );
+
+          // console.log("uniqueStores", uniqueStores);
+
+          setStores(uniqueStores);
+        } else {
+          console.error(
+            "Error al obtener las tiendas desde componente",
+            storesResp
+          );
+        }
+
+        // Regiones
+        if (Array.isArray(regionsResp)) {
+          setRegions(regionsResp);
+        } else {
+          console.error("Error al obtener las regiones:", regionsResp);
+        }
+
+        // Clientes
+        if (Array.isArray(clientsResp)) {
+          setClients(clientsResp);
+          setFilteredClients(clientsResp);
+        } else {
+          console.error("Error al obtener clientes:", clientsResp);
+        }
+      } catch (error) {
+        console.error("Error al obtener datos desde componente", error);
+      }
+    };
+
+    handleGetData();
+  }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      const results = clients.filter(
+        (client) =>
+          client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          client.rut.replace(".", "").includes(searchTerm.toLowerCase())
+      );
+      setFilteredClients(results);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, clients]);
 
   return (
     <div className="w-full max-w-4xl mx-auto p-6 space-y-6">
@@ -83,12 +248,11 @@ function FormDrawerAddOpportunity(props: Props) {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          {/* Client and Location Section */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">
               Identificación del cliente y ubicación de la oportunidad
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="opportunityName"
@@ -107,17 +271,51 @@ function FormDrawerAddOpportunity(props: Props) {
                 control={form.control}
                 name="clientName"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre cliente</FormLabel>
+                  <FormItem className="w-full">
+                    <FormLabel>Nombre cliente o Rut - Sin puntos</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nombre cliente" {...field} />
+                      <div className="relative">
+                        {/* Input de búsqueda */}
+                        <Input
+                          className="w-full"
+                          placeholder="Nombre cliente"
+                          value={inputValue} // Muestra el valor seleccionado
+                          onChange={(e) => {
+                            setInputValue(e.target.value); // Actualiza lo que se ve en el input
+                            setSearchTerm(e.target.value); // Actualiza el término de búsqueda
+                            field.onChange(e.target.value); // Actualiza React Hook Form
+                          }}
+                        />
+
+                        {/* Dropdown con resultados filtrados */}
+                        {searchTerm.length > 0 &&
+                          filteredClients.length > 0 && (
+                            <div className="absolute z-10 bg-white border rounded shadow w-full max-h-60 overflow-auto">
+                              {filteredClients.map((client) => (
+                                <div
+                                  key={client.id}
+                                  className="p-2 hover:bg-gray-100 cursor-pointer"
+                                  onClick={() => {
+                                    form.setValue("clientName", client.name); // Actualiza React Hook Form
+                                    setInputValue(client.name); // Muestra el cliente seleccionado
+                                    setSearchTerm(""); // Limpia el término de búsqueda
+                                    setFilteredClients([]); // Limpia los clientes filtrados
+                                    setFilteredContacts(client.contacts); // Actualiza contactos
+                                  }}
+                                >
+                                  {client.name}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
+              {/* <FormField
                 control={form.control}
                 name="clientRut"
                 render={({ field }) => (
@@ -129,7 +327,7 @@ function FormDrawerAddOpportunity(props: Props) {
                     <FormMessage />
                   </FormItem>
                 )}
-              />
+              /> */}
 
               <FormField
                 control={form.control}
@@ -152,7 +350,14 @@ function FormDrawerAddOpportunity(props: Props) {
                   <FormItem>
                     <FormLabel>Región</FormLabel>
                     <Select
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+
+                        // console.log("value", value);
+
+                        const region = regions.find((r) => r.name === value);
+                        setCommunes(region ? region.communes : []);
+                      }}
                       defaultValue={field.value}
                     >
                       <FormControl>
@@ -162,8 +367,8 @@ function FormDrawerAddOpportunity(props: Props) {
                       </FormControl>
                       <SelectContent>
                         {regions.map((region) => (
-                          <SelectItem key={region} value={region}>
-                            {region}
+                          <SelectItem key={region.id} value={region.name}>
+                            {region.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -190,8 +395,8 @@ function FormDrawerAddOpportunity(props: Props) {
                       </FormControl>
                       <SelectContent>
                         {communes.map((commune) => (
-                          <SelectItem key={commune} value={commune}>
-                            {commune}
+                          <SelectItem key={commune.id} value={commune.id}>
+                            {commune.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -203,7 +408,6 @@ function FormDrawerAddOpportunity(props: Props) {
             </div>
           </div>
 
-          {/* Contact Section */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Contacto del asociado</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -212,9 +416,35 @@ function FormDrawerAddOpportunity(props: Props) {
                 name="contactName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre contacto</FormLabel>
+                    <FormLabel>Nombre de contacto</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nombre contacto" {...field} />
+                      <div className="relative">
+                      
+                        <Input
+                          placeholder="Seleccione un contacto"
+                          {...field}
+                        />
+
+                       
+                        {filteredContacts.length > 0 && (
+                          <div className="absolute z-10 bg-white border rounded shadow w-full max-h-60 overflow-auto">
+                            {filteredContacts.map((contact) => (
+                              <div
+                                key={contact.id}
+                                className="p-2 hover:bg-gray-100 cursor-pointer"
+                                onClick={() => {
+                                  form.setValue("contactName", contact.name);
+                                  form.setValue("phone", contact.phone);
+                                  form.setValue("email", contact.email);
+                                  setFilteredContacts([]);
+                                }}
+                              >
+                                {contact.name}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -255,7 +485,6 @@ function FormDrawerAddOpportunity(props: Props) {
             </p>
           </div>
 
-          {/* Characteristics Section */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">
               Características de la oportunidad
@@ -278,8 +507,8 @@ function FormDrawerAddOpportunity(props: Props) {
                       </FormControl>
                       <SelectContent>
                         {projectTypes.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
+                          <SelectItem key={type.id} value={type.name}>
+                            {type.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -323,9 +552,12 @@ function FormDrawerAddOpportunity(props: Props) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {stores.map((store) => (
-                          <SelectItem key={store} value={store}>
-                            {store}
+                        {stores.map((store, index) => (
+                          <SelectItem
+                            key={`${store.name}-${index}`}
+                            value={store.name}
+                          >
+                            {store.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -351,7 +583,12 @@ function FormDrawerAddOpportunity(props: Props) {
                               !field.value && "text-muted-foreground"
                             )}
                           >
-                            <span>Seleccione fecha inicio</span>
+                            {field.value ? (
+                              format(new Date(field.value), "dd/MM/yyyy") 
+                            ) : (
+                              <span>Seleccione fecha cierre</span>
+                            )}
+
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -388,7 +625,7 @@ function FormDrawerAddOpportunity(props: Props) {
                             )}
                           >
                             {field.value ? (
-                              format(new Date(field.value), "dd/MM/yyyy") // Formatea la fecha
+                              format(new Date(field.value), "dd/MM/yyyy") 
                             ) : (
                               <span>Seleccione fecha cierre</span>
                             )}
