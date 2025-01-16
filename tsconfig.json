@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "utils/icons-svg-data.tsx", "http.server.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "utils/icons-svg-data.tsx", "http.server.js", "next.config.mjs"],
   "exclude": ["node_modules"]
 }
