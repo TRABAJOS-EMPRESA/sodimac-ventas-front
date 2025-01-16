@@ -149,6 +149,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/auth/login",
   },
+  debug: true,
 };
 
 // TODO: FLUJO NEXTAUTH PARA CREDENCIALES

@@ -5,7 +5,7 @@ const ROUTES_EXECUTIVE = {
     DESK_ASISSTANCE_MANAGER: "/escritorio-subgerente",
     OPORTUNITIES_FATHER: "/escritorio-ejecutivo/oportunidades-padre",
     OPORTUNITIES_CHILD: "/escritorio-ejecutivo/oportunidades-hija/",
-
+    TASKS: "/escritorio-ejecutivo/tareas",
     STATISTICS: "/escritorio-ejecutivo/estadisticas",
     // PROFILE: (id: string) => `/profile/${id}`,
   };

@@ -3,6 +3,7 @@ export interface GetStoresResp {
     name:    string;
     region:  Region;
     commune: Commune;
+    code: number;
 }
 
 export interface Commune {
@@ -18,3 +19,7 @@ export interface Region {
     number:       string;
     abbreviation: string;
 }
+
+
+
+

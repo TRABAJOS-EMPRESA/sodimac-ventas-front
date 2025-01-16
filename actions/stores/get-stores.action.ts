@@ -25,6 +25,9 @@ export async function getStores(): Promise<GetStoresResp[] | ErrorResp | [] > {
         });
         if (response.ok) {
             const data: GetStoresResp[] = await response.json();
+
+                console.log('stores', data);
+                
             return data;
         } else {
             const errorData: ErrorResp = await response.json();

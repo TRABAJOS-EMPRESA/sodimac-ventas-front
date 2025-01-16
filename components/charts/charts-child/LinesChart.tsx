@@ -47,7 +47,7 @@ const LineChart: React.FC<LineChartProps> = (props) => {
         label: "Progreso",
         data: dataLineChart,
         borderColor: trendColor,
-        borderWidth: 2,
+        borderWidth: 1,
         tension: 0.4,
         pointRadius: 0,
       },

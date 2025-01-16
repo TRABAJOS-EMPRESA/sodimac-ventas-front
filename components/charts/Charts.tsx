@@ -27,7 +27,6 @@ interface ChartsDeskData {
     id: string;
     state: string;
     labels: string[];
-    data: number[];
     percentage: string;
     numberOpportunities: string;
   };
@@ -35,8 +34,7 @@ interface ChartsDeskData {
 
 function Charts(props: ChartsDeskData) {
   const { opportunitiesStart, ongoingOpportunity, opportunitiesToEnd } = props;
-  
- 
+
   const chartsDesk = [
     {
       id: opportunitiesStart?.id,
@@ -68,10 +66,7 @@ function Charts(props: ChartsDeskData) {
       id: opportunitiesToEnd?.id,
       state: opportunitiesToEnd?.state,
       chart: (
-        <DoughnutChart
-          dataDoughnut={opportunitiesToEnd?.data || []}
-          percentage={opportunitiesToEnd?.percentage || "0%"}
-        />
+        <DoughnutChart percentage={opportunitiesToEnd?.percentage || "0%"} />
       ),
       title: "Op. hijas por vencer",
       percentage: opportunitiesToEnd?.percentage || "0%",
@@ -97,8 +92,10 @@ function Charts(props: ChartsDeskData) {
             {chart.chart}
           </div>
           <Link
-          // /\s+/g
-            href={`${ROUTES_EXECUTIVE.OPORTUNITIES_CHILD}?state=${chart.state.replace(" ", "_")}`}
+            // /\s+/g
+            href={`${
+              ROUTES_EXECUTIVE.OPORTUNITIES_CHILD
+            }?state=${chart.state.replace(" ", "_")}`}
             className="text-primary-white flex items-center justify-center w-full text-center rounded-full hover:bg-blue-600 cursor-pointer bg-primary-blue py-2 px-3"
           >
             Ver

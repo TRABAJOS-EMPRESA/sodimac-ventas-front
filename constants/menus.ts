@@ -2,21 +2,21 @@ import { LeftSideBarMenu } from "@/interfaces/navigation/left-sidebar-menu.inter
 import {
   getAlignLeftSVG,
   getBriefCaseSVG,
-  getLogoSmallSVG,
+  getHomeSVG,
   getWalletsSVG,
 } from "@/utils/icons-svg-data";
 import ROUTES_EXECUTIVE from "./routes";
 
 export const leftSideBarMenuExecutive: LeftSideBarMenu[] = [
   {
-    title: "Escritorio Ejecutivo",
-    icon: () => getLogoSmallSVG(),
+    title: "home",
+    icon: () => getHomeSVG(),
     href: ROUTES_EXECUTIVE.DESK_EXECUTIVE,
   },
   {
-    title: "Oportunidades Padre",
+    title: "Tareas",
     icon: () => getBriefCaseSVG(),
-    href: ROUTES_EXECUTIVE.OPORTUNITIES_FATHER,
+    href: ROUTES_EXECUTIVE.TASKS,
   },
   {
     title: "Oportunidades Hija",

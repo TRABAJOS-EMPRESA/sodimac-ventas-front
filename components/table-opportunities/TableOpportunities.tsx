@@ -179,7 +179,7 @@ function TableOpportunities() {
 
   return (
     <div className="">
-      <div className="flex items-center gap-2 bg-gray-100 py-4 pl-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
+      <div className="w-full flex items-center gap-2 bg-gray-100 py-4 pl-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
         <Button
           className="border-2 border-blue-500 text-blue-500 rounded-full font-bold cursor-pointer"
           onClick={resetColumns}
@@ -195,7 +195,7 @@ function TableOpportunities() {
               Configurar tabla
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[800px]">
+          <DialogContent className="sm:max-w-[800px] fade-in">
             <DialogHeader>
               <DialogTitle>Columnas tabla de oportunidades</DialogTitle>
               <DialogDescription>
@@ -233,7 +233,7 @@ function TableOpportunities() {
               {columns.map((column) =>
                 column.visible ? (
                   <TableHead key={column.key}>
-                    <div className="flex items-center">
+                    <div className="flex items-center  fade-in">
                       {activeFilter === column.key ? (
                         <div className="flex items-center gap-2">
                           <input
@@ -264,13 +264,13 @@ function TableOpportunities() {
               <TableHead>Acción</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
+          <TableBody className=" fade-in">
             {loading
               ? Array.from({ length: 5 }).map((_, index) => (
                   <TableRow key={index}>
                     {Array.from({ length: columns.length }).map((_, idx) => (
                       <TableCell key={idx}>
-                        <Skeleton className="h-4 w-full rounded bg-gray-200 animate-pulse" />
+                        <Skeleton className="h-9 min-w-full rounded bg-gray-200 animate-pulse" />
                       </TableCell>
                     ))}
                   </TableRow>

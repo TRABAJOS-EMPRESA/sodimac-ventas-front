@@ -1,6 +1,6 @@
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
-import { validateTokenWithUserInfo } from "./actions/user/validate-token-camp.action";
+// import { validateTokenWithUserInfo } from "./actions/user/validate-token-camp.action";
 
 export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -32,16 +32,17 @@ export async function middleware(req: NextRequest) {
     return res;
   }
 
+  // TODO: VALIDACION TOKEN CAMP
   //TODO: MOSTRAR ALERTA DE QUE NO TEIENE PERMISOS PARA ENTRAR
-  const isValidate = await validateTokenWithUserInfo(token.tokenKeycloak!);
+  // const isValidate = await validateTokenWithUserInfo(token.tokenKeycloak!);
 
-  if (!isValidate) {
-    console.log("Token de Camp inválido, redirigiendo a login");
-    const res = NextResponse.redirect(new URL("/auth/login", req.url));
-    res.cookies.set("next-auth.session-token", "", { maxAge: -1 });
-    res.cookies.set("next-auth.csrf-token", "", { maxAge: -1 });
-    return res;
-  }
+  // if (!isValidate) {
+  //   console.log("Token de Camp inválido, redirigiendo a login");
+  //   const res = NextResponse.redirect(new URL("/auth/login", req.url));
+  //   res.cookies.set("next-auth.session-token", "", { maxAge: -1 });
+  //   res.cookies.set("next-auth.csrf-token", "", { maxAge: -1 });
+  //   return res;
+  // }
 
   const { role } = token || {};
   if ((path === "/auth/login" || path === "/") && role) {

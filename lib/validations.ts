@@ -75,7 +75,7 @@ export const dialogTableOpportunityFormSchema = z.object({
   startDate: z.date({
     required_error: "La fecha de inicio es requerida",
   }),
-  endDate: z.date({
+  endDate: z.date( {
     required_error: "La fecha de cierre es requerida",
   }),
   amount: z.string().min(1, "El monto es requerido"),

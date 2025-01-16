@@ -1,17 +1,15 @@
-import ButtonTableOpportunities from "@/components/button-table-opportunities/ButtonTableOpportunities";
 import Charts from "@/components/charts/Charts";
 import DrawerOpportunities from "@/components/drawer-opportunity/DrawerOpportunities";
 import Image from "next/image";
-import { auth  } from "@/utils/auth";
+import { auth } from "@/utils/auth";
+import ChartsTasks from "@/components/charts/ChartsTasks";
+import ButtonDashboardCustom from "@/components/button-table-opportunities/ButtonTableOpportunities";
+import ROUTES_EXECUTIVE from "@/constants/routes";
 
 // recibir data de endpoint
 
 async function DeskExecutivePage() {
-
-  const session = await auth()
-
-  
-  
+  const session = await auth();
 
   return (
     <div className="w-full flex flex-col items-center justify-center h-full space-y-7 ">
@@ -52,45 +50,56 @@ async function DeskExecutivePage() {
           opportunitiesToEnd={{
             state: "por vencer ",
             id: "3",
-            data: [50, 50],
             labels: [""],
-            percentage: "50%",
+            percentage: "100%",
             numberOpportunities: "19000",
           }}
-          
         />
-        <Charts
-          opportunitiesStart={{
+
+        <div className="w-full flex flex-col items-center justify-center space-y-3">
+          <DrawerOpportunities w={"w-full"} session={session!} />
+          <ButtonDashboardCustom
+            title="Ver tabla de oportunidades"
+            route={ROUTES_EXECUTIVE.OPORTUNITIES_CHILD}
+          />
+        </div>
+      </div>
+
+      <div className="flex items-start justify-start text-left w-full">
+        <h1 className="text-2xl font-bold">Mis tareas</h1>
+      </div>
+
+      <div className="grid grid-cols-4 gap-5">
+        <ChartsTasks
+          taskStart={{
             id: "1",
             state: "inicio",
             labels: ["Ago", "Sep", "Oct", "Nov", "Dic"],
             data: [12, 19, 3, 5, 2, 3],
-            numberOpportunities: "120",
-            percentage: "+12%",
+            numberTask: "200",
+            percentage: "+20%",
           }}
-          ongoingOpportunity={{
+          ongoingTask={{
             id: "2",
-            state: "cotizada",
+            state: "en_progreso",
             labels: ["Ago", "Sep", "Oct", "Nov", "Dic"],
             data: [10, 23, 35, 42, 13, 12],
-            numberOpportunities: "5",
-            percentage: "+12%",
+            numberTask: "5",
+            percentage: "+5%",
           }}
-          opportunitiesToEnd={{
-            state: "por vencer ",
+          taskToEnd={{
+            state: "finalizadas",
             id: "3",
-            data: [50, 50],
             labels: [""],
-            percentage: "50%",
-            numberOpportunities: "19000",
+            percentage: "10%",
+            numberTask: "10",
           }}
-          
         />
-
         <div className="w-full flex flex-col items-center justify-center space-y-3">
-
-          <DrawerOpportunities w={"w-full"} session={session!}/>
-          <ButtonTableOpportunities />
+          <ButtonDashboardCustom
+            title="Ver tareas"
+            route={ROUTES_EXECUTIVE.TASKS}
+          />
         </div>
       </div>
     </div>

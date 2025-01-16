@@ -46,6 +46,7 @@ import { getClients } from "@/actions/clients/get-clients-action.action";
 import { useSession } from "next-auth/react";
 import { createOpportunity } from "@/actions/create-opportunity/create-opportunity.action";
 import { CreateOpportunityRequest } from "@/interfaces/opportunities/create-oportunity.interface";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock data - replace with actual data from your API
 
@@ -56,11 +57,11 @@ interface Props {
 function FormDrawerAddOpportunity(props: Props) {
   const { setIsOpen } = props;
 
+  const { toast } = useToast();
   const { data: session } = useSession();
   const userId = session?.user?.id;
 
-  console.log('userid -->>>>>>', userId);
-  
+  console.log("userid -->>>>>>", userId);
 
   const [projectTypes, setProjectTypes] = useState<ProjectType[]>([]);
   const [stores, setStores] = useState<GetStoresResp[]>([]);
@@ -74,7 +75,6 @@ function FormDrawerAddOpportunity(props: Props) {
   const [searchTerm, setSearchTerm] = useState(""); // Término de búsqueda
 
   console.log("userId", userId);
-  
 
   const form = useForm<OpportunityFormValues>({
     resolver: zodResolver(opportunitySchema),
@@ -155,9 +155,27 @@ function FormDrawerAddOpportunity(props: Props) {
     try {
       const resp = await createOpportunity(objectCreateOp);
       if ("error" in resp) {
-        console.error("Error creating opportunity:");
-      } else {
+        toast({
+          variant: "destructive",
+          className: 'bg-primary-blue text-white',
+          title: "Error al crear oportunidad",
+          description: resp.message,
+          
+        });
         console.log("Opportunity created successfully:", resp);
+      } else {
+        toast({
+          variant: "default",
+          className: 'bg-primary-blue text-white',
+          title: "Oportunidad creada",
+          description: "La oportunidad se ha creado exitosamente",
+          
+        });
+        console.log("Opportunity created successfully:", resp);
+
+        form.reset()
+        setIsOpen(false);
+
       }
     } catch (error) {
       console.error("Unexpected error:", error);
@@ -419,13 +437,11 @@ function FormDrawerAddOpportunity(props: Props) {
                     <FormLabel>Nombre de contacto</FormLabel>
                     <FormControl>
                       <div className="relative">
-                      
                         <Input
                           placeholder="Seleccione un contacto"
                           {...field}
                         />
 
-                       
                         {filteredContacts.length > 0 && (
                           <div className="absolute z-10 bg-white border rounded shadow w-full max-h-60 overflow-auto">
                             {filteredContacts.map((contact) => (
@@ -557,7 +573,7 @@ function FormDrawerAddOpportunity(props: Props) {
                             key={`${store.name}-${index}`}
                             value={store.name}
                           >
-                            {store.name}
+                            {store.code} - {store.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -584,7 +600,7 @@ function FormDrawerAddOpportunity(props: Props) {
                             )}
                           >
                             {field.value ? (
-                              format(new Date(field.value), "dd/MM/yyyy") 
+                              format(new Date(field.value), "dd/MM/yyyy")
                             ) : (
                               <span>Seleccione fecha cierre</span>
                             )}
@@ -625,7 +641,7 @@ function FormDrawerAddOpportunity(props: Props) {
                             )}
                           >
                             {field.value ? (
-                              format(new Date(field.value), "dd/MM/yyyy") 
+                              format(new Date(field.value), "dd/MM/yyyy")
                             ) : (
                               <span>Seleccione fecha cierre</span>
                             )}

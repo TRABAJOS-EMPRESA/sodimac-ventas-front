@@ -13,13 +13,19 @@ function Login() {
   const router = useRouter();
 
   return (
-    <div>
-      <div>
+    <div className="w-1/4">
+      <div className="flex flex-col w-full justify-center items-center space-y-5">
         <Image
-          src="/img/icons/login-icons/login-group.png"
+          src="/img/sodimac.png"
           alt="login-group"
-          width={350}
-          height={350}
+          width={200}
+          height={100}
+        />
+        <Image
+          src="/img/mi-radar.png"
+          alt="login-group"
+          width={400}
+          height={100}
         />
       </div>
 
