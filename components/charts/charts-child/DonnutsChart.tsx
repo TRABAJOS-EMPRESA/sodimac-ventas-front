@@ -5,11 +5,10 @@ import { Doughnut } from "react-chartjs-2";
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 interface DoughnutChartProps {
-  percentage: string; // Ejemplo: "50%"
+  percentage: string; 
 }
 
 const DoughnutChart: React.FC<DoughnutChartProps> = ({ percentage }) => {
-  // Convierte el porcentaje en número y calcula las secciones
   const progress = parseInt(percentage.replace("%", ""), 10);
   const remaining = 100 - progress;
 
@@ -26,22 +25,20 @@ const DoughnutChart: React.FC<DoughnutChartProps> = ({ percentage }) => {
 
   const options = {
     responsive: true,
-    cutout: "70%", // Define el tamaño del hueco del gráfico
+    cutout: "70%",
     plugins: {
       legend: {
-        display: false, // Oculta la leyenda
+        display: false, 
       },
       tooltip: {
-        enabled: true, // Muestra el tooltip al pasar el mouse
+        enabled: true,
       },
     },
   };
 
   return (
     <div className="relative w-24 h-24 flex justify-center items-center">
-      {/* Renderiza el gráfico */}
       <Doughnut data={data} options={options} />
-      {/* Muestra el porcentaje centrado */}
       <div className="absolute text-center">
         <p className="text-[14px] font-semibold text-gray-800">{percentage}</p>
       </div>

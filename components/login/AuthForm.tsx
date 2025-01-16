@@ -94,6 +94,7 @@ const AuthForm = <T extends FieldValues>({
                       />
                     </div>
                     <Input
+                    disabled
                       required
                       type={
                         field.name === "password"
@@ -115,7 +116,7 @@ const AuthForm = <T extends FieldValues>({
 
         <Button
           className="bg-primary-blue hover:bg-blue-500 text-primary-white  min-h-11 w-full rounded-full"
-          disabled={form.formState.isSubmitting}
+          disabled
         >
           {form.formState.isSubmitting
             ? buttonText === "Inicia Sesión"
