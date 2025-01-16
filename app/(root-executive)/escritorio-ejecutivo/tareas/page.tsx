@@ -184,6 +184,11 @@ const tasks: Task[] = [
   },
 ];
 
+// AQUI LO QUE HAY QUE HACER ES USAR REACT QUERY TRAERSE LA DATA 
+// FILTRARLA Y MOSTRARLA EN COLUMNAS, SI EL USUARIO CAMBIA UNA TAREA DE COLUMNA CAMBIARLE
+// EL ESTADO AUTOMATICAMENTE Y DEJAR SIN EFECTO EL CACHE DE LA LLAMADA QUE TRAE A TODAS LAS TAREAS 
+// PARA PROVOCAR EL EFECTO DE TOMAR UNA TAREA E INSERTARLA EN OTRA TABLA 
+
 const iniciadas: Task[] = tasks.filter(
   (t: Task) => t.statusOpportunity === "inicio"
 );
@@ -206,7 +211,9 @@ function TasksPage() {
         routeTitle="Dashboard"
       />
       <div className="grid grid-cols-4 gap-5">
-        <div className="col-span-1 w-[300px] flex flex-col items-center justify-center space-y-3 p-7"></div>
+        <div className="col-span-1 w-[300px] flex flex-col items-center justify-center space-y-3 p-7">
+
+        </div>
 
         {/* PRIMERA COLUMNA INICIADAS */}
 

@@ -11,8 +11,9 @@ function TaskCard(props: Props) {
 
   return tasks.map((t) => (
     <div
+      draggable
       key={t.id}
-      className="flex flex-col space-y-7 p-2 border border-gray-200 rounded-xl"
+      className="flex flex-col space-y-7 p-2 border border-gray-200 rounded-xl bg-primary-white"
     >
       <div className="flex flex-col">
         <div className="flex flex-row justify-center items-center gap-2 ">
