@@ -42,7 +42,8 @@ import {
   dialogTableOpportunityFormSchema,
   DialogTableOpportunityFormSchema,
 } from "@/lib/validations";
-import { Opportunity } from "../TableOpportunities";
+import { Opportunity } from "@/constants/column-config.constant";
+
 
 
 interface Props {
