@@ -78,12 +78,12 @@ export const authOptions: NextAuthOptions = {
           } else {
             console.log("RESPONSE", response);
 
-            token.role = response.role;
+            token.role = response.role.name;
             token.campUuid = response.campUuid;
             token.id = user.id;
             token.name = user.name;
             token.email = user.email;
-            token.tokenKeycloak = account.access_token;
+            token.tokenKeycloak = account.access_token;            
             token.provider = account?.provider;
           }
         } catch (error) {
@@ -144,7 +144,7 @@ export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
-    maxAge: 60 * 60,
+    maxAge: 60 * 30,
   },
   pages: {
     signIn: "/auth/login",

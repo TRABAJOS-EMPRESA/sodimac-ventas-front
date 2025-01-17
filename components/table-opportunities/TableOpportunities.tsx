@@ -1,15 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,48 +10,32 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { Settings2, FileDown, FilterX, X, Eye } from "lucide-react";
-import { getOpportunitiesAll } from "@/actions/opportunities/get-opportunities-all.action";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Eye, FileDown, FilterX, Settings2, X } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import React, { useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 import DialogTableOpportunityForm from "./dialogs-table-oportunities/DialogTableOpportunityForm";
-
-export interface Opportunity {
-  id: string;
-  estado: string;
-  oportunidadPadre: string;
-  oportunidadHija: string;
-  tipoProyecto: string;
-  nombreCliente: string;
-  rut: string;
-  ingresos: number;
-  fechaInicio: string;
-  fechaCierre: string;
-}
-
-export interface ColumnConfig {
-  key: keyof Opportunity;
-  label: string;
-  visible: boolean;
-}
+import { getOpportunitiesByIdExecutive } from "@/actions/opportunities/get-opportunities-by-id-executive.action";
+import {
+  columnConfig,
+  ColumnConfig,
+  Opportunity,
+} from "@/constants/column-config.constant";
 
 function TableOpportunities() {
   const searchParams = useSearchParams();
   const stateFilter = searchParams.get("state");
 
-  const [columns, setColumns] = useState<ColumnConfig[]>([
-    { key: "estado", label: "Estado", visible: true },
-    { key: "oportunidadPadre", label: "Oportunidad Padre", visible: true },
-    { key: "oportunidadHija", label: "Oportunidad Hija", visible: true },
-    { key: "tipoProyecto", label: "Tipo de proyecto", visible: true },
-    { key: "nombreCliente", label: "Nombre cliente", visible: true },
-    { key: "rut", label: "RUT", visible: true },
-    { key: "ingresos", label: "Ingresos", visible: true },
-    { key: "fechaInicio", label: "Fecha inicio", visible: true },
-    { key: "fechaCierre", label: "Fecha cierre", visible: true },
-  ]);
+  const [columns, setColumns] = useState<ColumnConfig[]>(columnConfig);
 
   const [data, setData] = useState<Opportunity[]>([]);
   const [filteredData, setFilteredData] = useState<Opportunity[]>([]);
@@ -77,33 +53,43 @@ function TableOpportunities() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const response = await getOpportunitiesAll();
+        const response = await getOpportunitiesByIdExecutive({
+          page: 1,
+          limit: 10000,
+        });
+
+        console.log("response", response);
 
         if (Array.isArray(response)) {
-          const mappedData = response.map((opportunity) => ({
-            id: opportunity.id,
-            estado: opportunity.status.status,
-            oportunidadPadre: opportunity.opportunityName,
-            oportunidadHija: opportunity.opportunityName,
-            tipoProyecto: opportunity.projectType,
-            nombreCliente: opportunity.client.name,
-            rut: opportunity.client.rut || "",
-            ingresos: opportunity.availableBudget,
-            fechaInicio: new Date(opportunity.startDate).toLocaleDateString(),
-            fechaCierre: new Date(opportunity.endDate).toLocaleDateString(),
-          }));
+          const mappedData = response.flatMap((opportunity) =>
+            opportunity.childs.map((child) => ({
+              id: child.id,
+              estado: child.status?.status || "Sin estado",
+              oportunidadPadre: opportunity.opportunityName || "Sin nombre",
+              oportunidadHija: String(child.productLine.name) || "Sin línea", // Conversión explícita a string
+              tipoProyecto: String(opportunity.projectType.name) || "Sin tipo", // Conversión explícita a string
+              nombreCliente: opportunity.client?.name || "Cliente desconocido",
+              rut: opportunity.client?.rut || "Sin RUT",
+              ingresos: opportunity.availableBudget || 0,
+              fechaInicio: opportunity.startDate
+                ? new Date(opportunity.startDate).toLocaleDateString()
+                : "Sin fecha",
+              fechaCierre: opportunity.endDate
+                ? new Date(opportunity.endDate).toLocaleDateString()
+                : "Sin fecha",
+            }))
+          );
 
-          if (stateFilter) {
-            const filtered = mappedData.filter((opportunity) =>
-              opportunity.estado
-                .toLowerCase()
-                .includes(stateFilter.toLowerCase())
-            );
-            setFilteredData(filtered);
-          } else {
-            setFilteredData(mappedData);
-          }
-          setData(mappedData);
+          const filteredData = stateFilter
+            ? mappedData.filter((opportunity) =>
+                opportunity.estado
+                  .toLowerCase()
+                  .includes(stateFilter.toLowerCase())
+              )
+            : mappedData;
+
+          setFilteredData(filteredData);
+          setData(mappedData as Opportunity[]);
         }
       } catch (error) {
         console.error("Error al cargar oportunidades:", error);
@@ -177,8 +163,16 @@ function TableOpportunities() {
     setIsDialogOpen(false);
   };
 
+  const handlePageChange = (newPage: number) => {
+    setLoading(true);
+    setTimeout(() => {
+      setCurrentPage(newPage);
+      setLoading(false);
+    }, 500);
+  };
+
   return (
-    <div className="">
+    <div className="min-w-[1200px] max-w-[1200px]">
       <div className="w-full flex items-center gap-2 bg-gray-100 py-4 pl-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
         <Button
           className="border-2 border-blue-500 text-blue-500 rounded-full font-bold cursor-pointer"
@@ -266,17 +260,17 @@ function TableOpportunities() {
           </TableHeader>
           <TableBody className=" fade-in">
             {loading
-              ? Array.from({ length: 5 }).map((_, index) => (
+              ? Array.from({ length: 10 }).map((_, index) => (
                   <TableRow key={index}>
                     {Array.from({ length: columns.length }).map((_, idx) => (
                       <TableCell key={idx}>
-                        <Skeleton className="h-9 min-w-full rounded bg-gray-200 animate-pulse" />
+                        <Skeleton className="h-9 min-w-full rounded bg-gray-200 animate-pulse " />
                       </TableCell>
                     ))}
                   </TableRow>
                 ))
               : paginatedFilteredData.map((row) => (
-                  <TableRow key={row.id}>
+                  <TableRow key={row.id} className="fade-in">
                     {columns
                       .filter((col) => col.visible)
                       .map((column) => (
@@ -318,7 +312,7 @@ function TableOpportunities() {
       <div className="flex justify-between items-center py-4">
         <Button
           disabled={currentPage === 1}
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          onClick={() => handlePageChange(currentPage - 1)}
         >
           Anterior
         </Button>
@@ -327,9 +321,7 @@ function TableOpportunities() {
         </span>
         <Button
           disabled={currentPage === totalPages}
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-          }
+          onClick={() => handlePageChange(currentPage + 1)}
         >
           Siguiente
         </Button>

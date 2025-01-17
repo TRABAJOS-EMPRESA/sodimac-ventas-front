@@ -28,13 +28,13 @@ export async function createOpportunity(
         "Content-Type": "application/json",
         "api-key": apikey,
       },
-      body: JSON.stringify(opportunityData),
+      body: JSON.stringify([opportunityData]),
     });
 
     if (response.ok) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data: any = await response.json();
-      console.log("data", data);
+      console.log("CREACION -> ", data);
 
       return data;
     } else {

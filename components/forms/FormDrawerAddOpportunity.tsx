@@ -108,8 +108,7 @@ function FormDrawerAddOpportunity(props: Props) {
       storeId: stores.find((store) => store.name === data.store)?.id || null,
       projectTypeId:
         projectTypes.find((type) => type.name === data.projectType)?.id || null,
-      productLineId:
-        projectTypes.find((type) => type.name === data.projectType)?.id || null,
+
       executiveId: userId,
       clientId:
         clients.find((client) => client.name === data.clientName)?.id || null,
@@ -137,7 +136,6 @@ function FormDrawerAddOpportunity(props: Props) {
       communeId: mappedData.communeId!,
       storeId: mappedData.storeId!,
       projectTypeId: mappedData.projectTypeId!,
-      productLineId: mappedData.productLineId!,
       executiveId: mappedData.executiveId!,
       clientId: mappedData.clientId!,
       contactIds: mappedData.contactIds!,
@@ -157,25 +155,22 @@ function FormDrawerAddOpportunity(props: Props) {
       if ("error" in resp) {
         toast({
           variant: "destructive",
-          className: 'bg-primary-blue text-white',
+          className: "bg-primary-blue text-white",
           title: "Error al crear oportunidad",
           description: resp.message,
-          
         });
         console.log("Opportunity created successfully:", resp);
       } else {
         toast({
           variant: "default",
-          className: 'bg-primary-blue text-white',
+          className: "bg-primary-blue text-white",
           title: "Oportunidad creada",
           description: "La oportunidad se ha creado exitosamente",
-          
         });
         console.log("Opportunity created successfully:", resp);
 
-        form.reset()
+        form.reset();
         setIsOpen(false);
-
       }
     } catch (error) {
       console.error("Unexpected error:", error);

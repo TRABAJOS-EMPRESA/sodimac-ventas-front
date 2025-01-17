@@ -3,5 +3,10 @@ export interface GetRoleResp {
     email:    string;
     names:    string;
     campUuid: string;
-    role:     string;
+    role:     Role;
+}
+
+export interface Role {
+    id: string;
+    name: string
 }
