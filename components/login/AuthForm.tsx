@@ -130,7 +130,7 @@ const AuthForm = <T extends FieldValues>({
         disabled={form.formState.isSubmitting}
         onClick={() => signIn("keycloak")}
       >
-        Inicia Sesión en <span className="font-bold">NT</span>
+        Inicia Sesión en <span className="font-bold">CAMP</span>
       </Button>
     </Form>
   );
