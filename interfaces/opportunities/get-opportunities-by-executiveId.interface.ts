@@ -3,8 +3,8 @@ export interface GetOpportunitiesByIDExecutive {
     opportunityName: string;
     workDirection:   string;
     availableBudget: number;
-    startDate:       number;
-    endDate:         number;
+    startDate:       Date;
+    endDate:         Date;
     description:     string;
     salesMethod:     string;
     salesTeam:       string;
@@ -21,8 +21,8 @@ export interface GetOpportunitiesByIDExecutive {
 export interface Child {
     id:              string;
     availableBudget: number;
-    startDate:       string;
-    endDate:         string;
+    startDate:       Date;
+    endDate:         Date;
     description:     string;
     status:          StatusOppChild;
     productLine:     ProjectType;

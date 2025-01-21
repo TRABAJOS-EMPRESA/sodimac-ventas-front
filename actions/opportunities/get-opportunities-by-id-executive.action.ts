@@ -23,7 +23,7 @@ export async function getOpportunitiesByIdExecutive(
     };
     return error;
   }
-  const endpoint = `${process.env.BACKEND_URL}/opportunities/child/filter?executiveId=${session?.user.id}&page=${pagination.page}&limit=${pagination.limit}`;
+  const endpoint = `${process.env.BACKEND_URL}/opportunities/executive/child/filter?executiveId=${session?.user.id}&page=${pagination.page}&limit=${pagination.limit}`;
   const apikey = process.env.API_KEY as string;
   // console.log("endpoint", endpoint);
   // console.log("apikey", apikey);
@@ -41,7 +41,7 @@ export async function getOpportunitiesByIdExecutive(
       headers: {
         "api-key": apikey,
       },
-      cache: "no-store",
+      next: {tags: ['opportunities']}
     });
     if (response.ok) {
       const data: GetOpportunitiesByIDExecutive[] = await response.json();

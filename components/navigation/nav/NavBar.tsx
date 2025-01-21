@@ -5,7 +5,7 @@ async function NavBar() {
   const session = await auth();
   return (
     <nav
-      className="flex justify-between items-center w-full border-none bg-primary-white lg:w-[calc(100%-90px)] px-10 fixed shadow-bottom shadow-sodimac 
+      className="z-50 flex justify-between items-center w-full border-none bg-primary-white lg:w-[calc(100%-90px)] px-10 fixed shadow-bottom shadow-sodimac 
     py-2 "
     >
       <h1 className="text-primary-blue text-2xl">

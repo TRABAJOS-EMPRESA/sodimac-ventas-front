@@ -10,8 +10,8 @@ export interface CreateOpportunityRequest {
   clientId: string;
   contactIds: string[];
   availableBudget: number;
-  startDate: number; 
-  endDate: number;   
+  startDate: Date; 
+  endDate: Date;   
   description: string;
   statusId: string;
   salesTeam: string;

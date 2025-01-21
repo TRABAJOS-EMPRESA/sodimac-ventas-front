@@ -26,7 +26,7 @@ async function HeaderPages(props: Props) {
           <Button variant={"ghost"} className="hover:bg-transparent">
             <Link
               href={route}
-              className="border-2 border-blue-500 text-blue-500 rounded-full py-[6px] px-2 flex items-center"
+              className="border-2 flex border-primary-blue py-[6px] px-2 text-primary-blue rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
             >
               <ChevronLeft className="ease-in-out w-10 h-10" />
               Volver a {routeTitle}

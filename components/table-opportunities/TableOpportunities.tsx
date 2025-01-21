@@ -19,24 +19,39 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, FileDown, FilterX, Settings2, X } from "lucide-react";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  Eye,
+  FileDown,
+  FilterX,
+  Settings2,
+  X,
+} from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 import DialogTableOpportunityForm from "./dialogs-table-oportunities/DialogTableOpportunityForm";
-import { getOpportunitiesByIdExecutive } from "@/actions/opportunities/get-opportunities-by-id-executive.action";
 import {
   columnConfig,
   ColumnConfig,
   Opportunity,
 } from "@/constants/column-config.constant";
+import { GetOpportunitiesByIDExecutive } from "@/interfaces/opportunities/get-opportunities-by-executiveId.interface";
+import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
+import { exportToPDF } from "@/utils/exportToPDF";
 
-function TableOpportunities() {
+interface Props {
+  response: GetOpportunitiesByIDExecutive[] | ErrorResp | [];
+}
+
+function TableOpportunities(props: Props) {
+  const { response } = props;
   const searchParams = useSearchParams();
   const stateFilter = searchParams.get("state");
 
   const [columns, setColumns] = useState<ColumnConfig[]>(columnConfig);
-
+  const initialColumnOrder = [...columnConfig];
   const [data, setData] = useState<Opportunity[]>([]);
   const [filteredData, setFilteredData] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,16 +65,9 @@ function TableOpportunities() {
     useState<Opportunity | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const mapData = async () => {
       setLoading(true);
       try {
-        const response = await getOpportunitiesByIdExecutive({
-          page: 1,
-          limit: 10000,
-        });
-
-        console.log("response", response);
-
         if (Array.isArray(response)) {
           const mappedData = response.flatMap((opportunity) =>
             opportunity.childs.map((child) => ({
@@ -70,12 +78,12 @@ function TableOpportunities() {
               tipoProyecto: String(opportunity.projectType.name) || "Sin tipo", // Conversión explícita a string
               nombreCliente: opportunity.client?.name || "Cliente desconocido",
               rut: opportunity.client?.rut || "Sin RUT",
-              ingresos: opportunity.availableBudget || 0,
-              fechaInicio: opportunity.startDate
-                ? new Date(opportunity.startDate).toLocaleDateString()
+              ingresos: child.availableBudget || 0,
+              fechaInicio: child.startDate
+                ? new Date(child.startDate).toLocaleDateString()
                 : "Sin fecha",
-              fechaCierre: opportunity.endDate
-                ? new Date(opportunity.endDate).toLocaleDateString()
+              fechaCierre: child.endDate
+                ? new Date(child.endDate).toLocaleDateString()
                 : "Sin fecha",
             }))
           );
@@ -98,8 +106,8 @@ function TableOpportunities() {
       }
     };
 
-    fetchData();
-  }, [stateFilter]);
+    mapData();
+  }, [response, stateFilter]);
 
   const handleFilterChange = (key: keyof Opportunity, value: string) => {
     const sourceData = stateFilter
@@ -122,6 +130,7 @@ function TableOpportunities() {
 
   const clearFilter = () => {
     setActiveFilter(null);
+
     const resetData = stateFilter
       ? data.filter((row) =>
           row.estado.toLowerCase().includes(stateFilter.toLowerCase())
@@ -130,10 +139,8 @@ function TableOpportunities() {
 
     setFilteredData(resetData);
     setCurrentPage(1);
-  };
 
-  const resetColumns = () => {
-    setColumns(columns.map((col) => ({ ...col, visible: true })));
+    setColumns(initialColumnOrder.map((col) => ({ ...col })));
   };
 
   const toggleColumn = (key: keyof Opportunity) => {
@@ -171,20 +178,49 @@ function TableOpportunities() {
     }, 500);
   };
 
+  const handleDragStart = (
+    event: React.DragEvent<HTMLTableCellElement>,
+    index: number
+  ) => {
+    event.dataTransfer.setData("text/plain", index.toString());
+  };
+
+  const handleDragOver = (event: React.DragEvent<HTMLTableCellElement>) => {
+    event.preventDefault();
+  };
+
+  const handleDrop = (
+    event: React.DragEvent<HTMLTableCellElement>,
+    targetIndex: number
+  ) => {
+    event.preventDefault();
+    const sourceIndex = parseInt(event.dataTransfer.getData("text/plain"), 10);
+    const updatedColumns = [...columns];
+
+    const [removedColumn] = updatedColumns.splice(sourceIndex, 1);
+    updatedColumns.splice(targetIndex, 0, removedColumn);
+
+    setColumns(updatedColumns);
+  };
+
+  const saveConfig = () => {
+    console.log(columns);
+  };
+
   return (
-    <div className="min-w-[1200px] max-w-[1200px]">
+    <div className="min-w-[1200px] max-w-[1200px] ">
       <div className="w-full flex items-center gap-2 bg-gray-100 py-4 pl-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
         <Button
-          className="border-2 border-blue-500 text-blue-500 rounded-full font-bold cursor-pointer"
-          onClick={resetColumns}
+          className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+          onClick={clearFilter}
         >
           <FilterX className="mr-2 h-4 w-4" />
-          Borrar filtros
+          Reestablecer Tabla
         </Button>
 
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="border-2 border-blue-500 text-blue-500 rounded-full font-bold cursor-pointer">
+            <Button className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out">
               <Settings2 className="mr-2 h-4 w-4" />
               Configurar tabla
             </Button>
@@ -211,22 +247,40 @@ function TableOpportunities() {
                 </div>
               ))}
             </div>
+
+            <div className="flex justify-end">
+              <Button
+                className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+                onClick={() => saveConfig()}
+              >
+                Guardar Configuración
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
 
-        <Button className="border-2 border-blue-500 text-blue-500 rounded-full font-bold">
+        <Button
+          className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+          onClick={() => exportToPDF(paginatedFilteredData, columns)}
+        >
           <FileDown className="mr-2 h-4 w-4" />
           Exportar como PDF
         </Button>
       </div>
 
-      <div className="rounded-md border">
+      <div className="border">
         <Table>
           <TableHeader className="bg-gray-100">
             <TableRow>
-              {columns.map((column) =>
+              {columns.map((column, index) =>
                 column.visible ? (
-                  <TableHead key={column.key}>
+                  <TableHead
+                    key={column.key}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, index)}
+                  >
                     <div className="flex items-center  fade-in">
                       {activeFilter === column.key ? (
                         <div className="flex items-center gap-2">
@@ -297,7 +351,7 @@ function TableOpportunities() {
                       ))}
                     <TableCell>
                       <Button
-                        variant="ghost"
+                        className=" text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
                         onClick={() => handleOpenDialog(row)}
                       >
                         <Eye className="h-4 w-4 text-blue-500" />
@@ -312,18 +366,20 @@ function TableOpportunities() {
       <div className="flex justify-between items-center py-4">
         <Button
           disabled={currentPage === 1}
+          className=" text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
           onClick={() => handlePageChange(currentPage - 1)}
         >
-          Anterior
+          <ChevronLeftIcon /> Anterior
         </Button>
         <span>
           Página {currentPage} de {totalPages}
         </span>
         <Button
           disabled={currentPage === totalPages}
+          className=" text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
           onClick={() => handlePageChange(currentPage + 1)}
         >
-          Siguiente
+          Siguiente <ChevronRightIcon />
         </Button>
       </div>
       {isDialogOpen && selectedOpportunity && (

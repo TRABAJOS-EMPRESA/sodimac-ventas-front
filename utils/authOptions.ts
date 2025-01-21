@@ -5,6 +5,7 @@ import { getRoleUser } from "@/actions/user/get-role-user.action";
 
 export const authOptions: NextAuthOptions = {
   providers: [
+
     KeycloakProvider({
       name: "keycloak",
       clientId: process.env.KEYCLOAK_CLIENT_ID as string,
@@ -68,6 +69,7 @@ export const authOptions: NextAuthOptions = {
         // console.log('account', account);
         // Petición POST para obtener datos adicionales
         try {
+          
           const response = await getRoleUser(user.email);
 
           if ("error" in response) {

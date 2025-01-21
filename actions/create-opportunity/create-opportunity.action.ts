@@ -2,12 +2,13 @@
 
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
 import { CreateOpportunityRequest } from "@/interfaces/opportunities/create-oportunity.interface";
+import { revalidateTag } from "next/cache";
 
 export async function createOpportunity(
   opportunityData: CreateOpportunityRequest
 ): Promise<CreateOpportunityRequest | ErrorResp> {
 
-  console.log("opportunityData", opportunityData);
+  console.log("opportunityData ----->>>>>>>", opportunityData);
   
   const endpoint = `${process.env.BACKEND_URL}/opportunities/create`;
   const apikey = process.env.API_KEY as string;
@@ -29,13 +30,15 @@ export async function createOpportunity(
         "api-key": apikey,
       },
       body: JSON.stringify([opportunityData]),
+      
+      
     });
 
     if (response.ok) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const data: any = await response.json();
       console.log("CREACION -> ", data);
-
+      revalidateTag('opportunities');
       return data;
     } else {
       const errorData: ErrorResp = await response.json();

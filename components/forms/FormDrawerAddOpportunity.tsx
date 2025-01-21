@@ -28,7 +28,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { cn, convertToExcelDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { OpportunityFormValues, opportunitySchema } from "@/lib/validations";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
@@ -47,8 +47,7 @@ import { useSession } from "next-auth/react";
 import { createOpportunity } from "@/actions/create-opportunity/create-opportunity.action";
 import { CreateOpportunityRequest } from "@/interfaces/opportunities/create-oportunity.interface";
 import { useToast } from "@/hooks/use-toast";
-
-// Mock data - replace with actual data from your API
+import { useRouter } from "next/navigation";
 
 interface Props {
   setIsOpen: (isOpen: boolean) => void;
@@ -56,12 +55,12 @@ interface Props {
 
 function FormDrawerAddOpportunity(props: Props) {
   const { setIsOpen } = props;
-
+  const router = useRouter();
   const { toast } = useToast();
   const { data: session } = useSession();
   const userId = session?.user?.id;
 
-  console.log("userid -->>>>>>", userId);
+  // console.log("userid -->>>>>>", userId);
 
   const [projectTypes, setProjectTypes] = useState<ProjectType[]>([]);
   const [stores, setStores] = useState<GetStoresResp[]>([]);
@@ -69,10 +68,9 @@ function FormDrawerAddOpportunity(props: Props) {
   const [communes, setCommunes] = useState<Commune[]>([]);
   const [clients, setClients] = useState<GetClientResp[]>([]);
   const [filteredContacts, setFilteredContacts] = useState<Contact[]>([]);
-
   const [filteredClients, setFilteredClients] = useState<GetClientResp[]>([]);
-  const [inputValue, setInputValue] = useState(""); // Valor visible en el input
-  const [searchTerm, setSearchTerm] = useState(""); // Término de búsqueda
+  const [inputValue, setInputValue] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
 
   console.log("userId", userId);
 
@@ -114,13 +112,14 @@ function FormDrawerAddOpportunity(props: Props) {
         clients.find((client) => client.name === data.clientName)?.id || null,
       contactIds:
         clients
-          .find((client) => client.name === data.clientName)
-          ?.contacts.map((c) => c.id) || null,
+          .find((client) =>
+            client.contacts.some((contact) => contact.name === data.contactName)
+          )
+          ?.contacts.filter((contact) => contact.name === data.contactName)
+          .map((contact) => contact.id) || [],
       availableBudget: parseInt(data.income),
-      startDate: data.startDate
-        ? convertToExcelDate(new Date(data.startDate))
-        : null,
-      endDate: data.endDate ? convertToExcelDate(new Date(data.endDate)) : null,
+      startDate: data.startDate ?? null,
+      endDate: data.endDate ?? null,
       description: data.description,
       statusId: "ef31d320-7150-42fc-a6a9-532f4e64ee26",
       salesTeam: "LORENA VERONICA RODRIGUEZ DIAZ",
@@ -168,9 +167,9 @@ function FormDrawerAddOpportunity(props: Props) {
           description: "La oportunidad se ha creado exitosamente",
         });
         console.log("Opportunity created successfully:", resp);
-
         form.reset();
         setIsOpen(false);
+        router.refresh();
       }
     } catch (error) {
       console.error("Unexpected error:", error);
@@ -295,6 +294,7 @@ function FormDrawerAddOpportunity(props: Props) {
                           value={inputValue} // Muestra el valor seleccionado
                           onChange={(e) => {
                             setInputValue(e.target.value); // Actualiza lo que se ve en el input
+                            // TERMINO DE BUSQUEDA
                             setSearchTerm(e.target.value); // Actualiza el término de búsqueda
                             field.onChange(e.target.value); // Actualiza React Hook Form
                           }}
@@ -309,7 +309,7 @@ function FormDrawerAddOpportunity(props: Props) {
                                   key={client.id}
                                   className="p-2 hover:bg-gray-100 cursor-pointer"
                                   onClick={() => {
-                                    form.setValue("clientName", client.name); // Actualiza React Hook Form
+                                    form.setValue("clientName", client.name); // Actualiza el Fomr React Hook Form
                                     setInputValue(client.name); // Muestra el cliente seleccionado
                                     setSearchTerm(""); // Limpia el término de búsqueda
                                     setFilteredClients([]); // Limpia los clientes filtrados
