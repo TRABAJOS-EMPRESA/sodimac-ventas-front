@@ -6,8 +6,6 @@ export async function middleware(req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const path = req.nextUrl.pathname;
 
-  
-
   if (!token) {
     if (path === "/auth/login") {
       console.log("Acceso permitido a la página de login");
@@ -45,6 +43,12 @@ export async function middleware(req: NextRequest) {
   // }
 
   const { role } = token || {};
+
+  if (!role || role == "") {
+    console.log("No hay rol en el token, redirigiendo a login");
+    return NextResponse.redirect(new URL("/403", req.url));
+  }
+
   if ((path === "/auth/login" || path === "/") && role) {
     console.log("Usuario autenticado, rol:", role);
 

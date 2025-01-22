@@ -13,7 +13,7 @@ function Login() {
   const router = useRouter();
 
   return (
-    <div className="w-1/4">
+    <div className="p-8 md:w-1/4 md:p-0">
       <div className="flex flex-col w-full justify-center items-center space-y-5">
         <Image
           src="/img/sodimac.png"

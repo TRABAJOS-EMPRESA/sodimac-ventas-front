@@ -1,5 +1,5 @@
 import { auth } from "@/utils/auth";
-import { getBellSVG } from "@/utils/icons-svg-data";
+import ButtonsNav from "./ButtonsNav";
 
 async function NavBar() {
   const session = await auth();
@@ -16,12 +16,7 @@ async function NavBar() {
         Que sea un excelente día !!
       </h1>
 
-      <div>
-        <div className=" left-5 top-2 relative rounded-full w-6 h-6 bg-primary-blue text-primary-white flex items-center justify-center">
-          3
-        </div>
-        <div className="pb-1">{getBellSVG()}</div>
-      </div>
+      <ButtonsNav session={session!} />
     </nav>
   );
 }

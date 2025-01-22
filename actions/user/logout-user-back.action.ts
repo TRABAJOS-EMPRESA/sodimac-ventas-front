@@ -1,18 +1,19 @@
-import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
-import { auth } from "@/utils/auth";
+'use server'
 
-export async function logoutUserBack(): Promise<string | ErrorResp> {
+import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
+
+export async function logoutUserBack(email: string, token: string): Promise<{message: string} | ErrorResp> {
   const endpoint = `${process.env.BACKEND_URL}/auth/logout`;
 
-  const session = await auth();
+// console.log("URLL BAAAAACKKKK LOGOUT", endpoint);
 
   try {
     const response = await fetch(endpoint, {
       method: "POST",
-      body: JSON.stringify({ email: session?.user.email }),
+      body: JSON.stringify({ email: email }),
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${session?.user.accessTokenBack}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 

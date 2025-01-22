@@ -61,8 +61,8 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       if (user && account?.provider === "keycloak") {
         try {
-          // const response = await getRoleUser(user.email, account.access_token!, account.refresh_token!);
-          const response = await getRoleUser(user.email, account.access_token!);
+          const response = await getRoleUser(user.email, account.access_token!, account.refresh_token!);
+          // const response = await getRoleUser(user.email, account.access_token!);
 
           if ("error" in response) {
             console.log(
