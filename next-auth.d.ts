@@ -5,10 +5,11 @@ export type ExtendedUser = DefaultSession["user"] & {
   name: string;
   email: string;
   role: string;
-  tokenCredentials?: string;
-  tokenKeycloak?: string;
+  accessTokenCamp?: string;
+  refreshAccessTokenCamp?: string;
+  accessTokenBack?: string;
+  refreshTokenBack?: string;
   campUuid?: string;
-  provider:? string;
 };
 // // importantisimooooooo para el error que habia pas que el user de next auth es string
 // declare module 'next-auth' {
@@ -28,14 +29,13 @@ declare module "next-auth" {
     name: string;
     email: string;
     role: string;
-    campUuid?:string;
-    tokenCredentials?: string;
-    tokenKeycloak?: string;
+    accessTokenCamp?: string;
+    refreshAccessTokenCamp?: string;
+    accessTokenBack?: string;
+    refreshTokenBack?: string;
+    campUuid?: string;
   }
-
 }
-
-
 
 declare module "next-auth/jwt" {
   interface JWT {
@@ -43,9 +43,12 @@ declare module "next-auth/jwt" {
     user: User;
     error?: string;
     role?: string;
-    campUuid?:string;
-    tokenCredentials?: string;
-    tokenKeycloak?: string;
+    campUuid?: string;
+    accessTokenCamp?: string;
+    refreshAccessTokenCamp?: string;
+    accessTokenBack?: string;
+    refreshTokenBack?: string;
+    expiredTokenBack?: number;
     provider?: string;
   }
 }

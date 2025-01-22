@@ -1,9 +1,11 @@
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
 import { ProductLine } from "@/interfaces/product-lines/product-lines.interface";
+import { auth } from "@/utils/auth";
 
 export async function getProductLines(): Promise<ProductLine[] | ErrorResp | [] > {
     const endpoint = `${process.env.BACKEND_URL}/product-lines`;
     const apikey = process.env.API_KEY as string;
+    const session = await auth();
     // console.log("endpoint", endpoint);  
     // console.log("apikey", apikey);
     if (!apikey) {
@@ -18,8 +20,9 @@ export async function getProductLines(): Promise<ProductLine[] | ErrorResp | [] 
         const response = await fetch(endpoint, {
             method: "GET",
             headers: {
-                "api-key": apikey,
-            },
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${session?.user.accessTokenBack}`,
+              },
         });
         if (response.ok) {
             const data: ProductLine[] = await response.json();

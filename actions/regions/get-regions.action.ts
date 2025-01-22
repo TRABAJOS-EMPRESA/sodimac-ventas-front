@@ -2,10 +2,12 @@
 
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
 import { GetRegionsResp } from "@/interfaces/regions/regions.interface";
+import { auth } from "@/utils/auth";
 
 export async function getRegions(): Promise<GetRegionsResp[] | ErrorResp | []> {
   const endpoint = `${process.env.BACKEND_URL}/regions`;
   const apikey = process.env.API_KEY as string;
+  const session = await auth()
   console.log("endpoint", endpoint);
   console.log("apikey", apikey);
   if (!apikey) {
@@ -20,7 +22,8 @@ export async function getRegions(): Promise<GetRegionsResp[] | ErrorResp | []> {
     const response = await fetch(endpoint, {
       method: "GET",
       headers: {
-        "api-key": apikey,
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session?.user.accessTokenBack}`,
       },
     });
     if (response.ok) {

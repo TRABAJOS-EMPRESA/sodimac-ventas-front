@@ -2,10 +2,12 @@
 
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
 import { GetStoresResp } from "@/interfaces/stores/store.interface";
+import { auth } from "@/utils/auth";
 
 export async function getStores(): Promise<GetStoresResp[] | ErrorResp | []> {
   const endpoint = `${process.env.BACKEND_URL}/stores`;
   const apikey = process.env.API_KEY as string;
+  const session = await auth();
   console.log("endpoint", endpoint);
   console.log("apikey", apikey);
   if (!apikey) {
@@ -20,7 +22,8 @@ export async function getStores(): Promise<GetStoresResp[] | ErrorResp | []> {
     const response = await fetch(endpoint, {
       method: "GET",
       headers: {
-        "api-key": apikey,
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session?.user.accessTokenBack}`,
       },
     });
     if (response.ok) {

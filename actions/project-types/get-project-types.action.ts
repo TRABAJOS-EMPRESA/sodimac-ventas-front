@@ -2,10 +2,12 @@
 
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
 import { ProjectType } from "@/interfaces/project-types/project-types.interface";
+import { auth } from "@/utils/auth";
 
 export async function getProjectTypes(): Promise<ProjectType[] | ErrorResp | [] > {
     const endpoint = `${process.env.BACKEND_URL}/project-types`;
     const apikey = process.env.API_KEY as string;
+    const session = await auth();
     // console.log("endpoint", endpoint);  
     // console.log("apikey desde projecttttttttt", apikey);
     if (!apikey) {
@@ -20,8 +22,9 @@ export async function getProjectTypes(): Promise<ProjectType[] | ErrorResp | [] 
         const response = await fetch(endpoint, {
             method: "GET",
             headers: {
-                "api-key": apikey,
-            },
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${session?.user.accessTokenBack}`,
+              },
         });
         if (response.ok) {
             const data: ProjectType[] = await response.json();

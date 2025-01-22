@@ -23,8 +23,8 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
-  if (!token.tokenKeycloak) {
-    console.log("Token Keycloak ausente, redirigiendo a login");
+  if (!token.accessTokenBack || !token.refreshAccessTokenCamp) {
+    console.log("Token Back ausente, redirigiendo a login");
 
     const res = NextResponse.redirect(new URL("/auth/login", req.url));
     res.cookies.set("next-auth.session-token", "", { maxAge: -1 });

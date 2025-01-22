@@ -1,11 +1,10 @@
 import { NextAuthOptions } from "next-auth";
 import KeycloakProvider from "next-auth/providers/keycloak";
-import CredentialsProvider from "next-auth/providers/credentials";
+// import CredentialsProvider from "next-auth/providers/credentials";
 import { getRoleUser } from "@/actions/user/get-role-user.action";
 
 export const authOptions: NextAuthOptions = {
   providers: [
-
     KeycloakProvider({
       name: "keycloak",
       clientId: process.env.KEYCLOAK_CLIENT_ID as string,
@@ -13,64 +12,57 @@ export const authOptions: NextAuthOptions = {
       issuer: process.env.KEYCLOAK_ISSUER,
     }),
 
-    CredentialsProvider({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: credentials?.email,
-                password: credentials?.password,
-              }),
-            }
-          );
+    // HABILITAR E INTEGRAR PARA FUTURO LOGIN TRADICIONAL
+    // CredentialsProvider({
+    //   name: "credentials",
+    //   credentials: {
+    //     email: { label: "Email", type: "text" },
+    //     password: { label: "Password", type: "password" },
+    //   },
+    //   // async authorize(credentials) {
+    //   //   try {
+    //   //     const response = await fetch(
+    //   //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`,
+    //   //       {
+    //   //         method: "POST",
+    //   //         headers: { "Content-Type": "application/json" },
+    //   //         body: JSON.stringify({
+    //   //           email: credentials?.email,
+    //   //           password: credentials?.password,
+    //   //         }),
+    //   //       }
+    //   //     );
 
-          if (response.ok) {
-            const { user } = await response.json();
+    //   //     if (response.ok) {
+    //   //       const { user } = await response.json();
 
-            console.log("user desde autorize", user);
+    //   //       console.log("user desde autorize", user);
 
-            return {
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              role: user.role,
-              tokenCredentials: user.token,
-            }; // Devuelve el usuario si es válido
-          } else {
-            const error = await response.json();
-            throw new Error(error.message || "Error de autenticación");
-          }
-        } catch (err) {
-          console.error("Error en authorize:", err);
-          throw new Error("No se pudo conectar al servidor.");
-        }
-      },
-    }),
+    //   //       return {
+    //   //         id: user.id,
+    //   //         name: user.name,
+    //   //         email: user.email,
+    //   //         role: user.role,
+    //   //         tokenCredentials: user.token,
+    //   //       }; // Devuelve el usuario si es válido
+    //   //     } else {
+    //   //       const error = await response.json();
+    //   //       throw new Error(error.message || "Error de autenticación");
+    //   //     }
+    //   //   } catch (err) {
+    //   //     console.error("Error en authorize:", err);
+    //   //     throw new Error("No se pudo conectar al servidor.");
+    //   //   }
+    //   // },
+    // }),
   ],
   callbacks: {
     // CALLBACKN PARA MANIPULAR EL TOKEN DE NEXTAUTH
     async jwt({ token, user, account }) {
       if (user && account?.provider === "keycloak") {
-        // LOGICA DE OBTENCION DE ROL EN KEYCLOAK
-        // TRAER LA RESPUESTA DE BACKEND RESPECTO AL ROL O PERFIL
-        // const uuid = account.providerAccountId;
-        // console.log("ENTROOOOOO A CALLBACK", user.email);
-        // console.log("ACCOUNT", account);
-
-        // console.log('account', account);
-        // Petición POST para obtener datos adicionales
         try {
-          
-          const response = await getRoleUser(user.email);
+          // const response = await getRoleUser(user.email, account.access_token!, account.refresh_token!);
+          const response = await getRoleUser(user.email, account.access_token!);
 
           if ("error" in response) {
             console.log(
@@ -78,14 +70,16 @@ export const authOptions: NextAuthOptions = {
               response.error
             );
           } else {
-            console.log("RESPONSE", response);
+            console.log("RESPONSE GET INFO USER", response);
 
             token.role = response.role.name;
-            token.campUuid = response.campUuid;
-            token.id = user.id;
-            token.name = user.name;
-            token.email = user.email;
-            token.tokenKeycloak = account.access_token;            
+            token.id = response.id;
+            token.name = response.names;
+            token.email = response.email;
+            // token.accessTokenCamp = account.access_token;
+            token.refreshAccessTokenCamp = account.refresh_token;
+            token.accessTokenBack = response.tokenBack.accessTokenBack;
+            token.refreshTokenBack = response.tokenBack.refreshTokenBack;
             token.provider = account?.provider;
           }
         } catch (error) {
@@ -100,7 +94,7 @@ export const authOptions: NextAuthOptions = {
         token.name = user.name;
         token.email = user.email;
         token.role = user.role;
-        token.tokenCredentials = user.tokenCredentials;
+
         token.provider = account?.provider;
       }
 
@@ -124,8 +118,10 @@ export const authOptions: NextAuthOptions = {
           name: token.name!,
           email: token.email!,
           role: token.role!,
-          tokenKeycloak: token.tokenKeycloak,
-          provider: token.provider,
+          // accessTokenCamp: token.accessTokenCamp,
+          refreshAccessTokenCamp: token.refreshAccessTokenCamp,
+          accessTokenBack: token.accessTokenBack,
+          refreshTokenBack: token.refreshTokenBack,
         };
       } else if (token && token.provider === "credentials") {
         session.user = {
@@ -133,12 +129,11 @@ export const authOptions: NextAuthOptions = {
           name: token.name!,
           email: token.email!,
           role: token.role!,
-          tokenCredentials: token.tokenCredentials,
-          provider: token.provider,
+          // tokenCredentials: token.tokenCredentials,
         };
       }
 
-      // console.log("session deesde sesion", session);
+      // console.log("session deesde SESSION CALLBACK", session);
 
       return session;
     },

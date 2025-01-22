@@ -2,6 +2,7 @@
 
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
 import { CreateOpportunityRequest } from "@/interfaces/opportunities/create-oportunity.interface";
+import { auth } from "@/utils/auth";
 import { revalidateTag } from "next/cache";
 
 export async function createOpportunity(
@@ -12,6 +13,7 @@ export async function createOpportunity(
   
   const endpoint = `${process.env.BACKEND_URL}/opportunities/create`;
   const apikey = process.env.API_KEY as string;
+  const session = await auth();
 
   if (!apikey) {
     const error: ErrorResp = {
@@ -27,7 +29,7 @@ export async function createOpportunity(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "api-key": apikey,
+        "Authorization": `Bearer ${session?.user.accessTokenBack}`,
       },
       body: JSON.stringify([opportunityData]),
       

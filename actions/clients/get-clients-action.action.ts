@@ -2,10 +2,12 @@
 
 import { GetClientResp } from "@/interfaces/client/client.interface";
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
+import { auth } from "@/utils/auth";
 
 export async function getClients(): Promise<GetClientResp[] | ErrorResp | []> {
   const endpoint = `${process.env.BACKEND_URL}/clients`;
   const apikey = process.env.API_KEY as string;
+  const session = await auth()
   console.log("endpoint", endpoint);
   console.log("apikey", apikey);
   if (!apikey) {
@@ -20,7 +22,8 @@ export async function getClients(): Promise<GetClientResp[] | ErrorResp | []> {
     const response = await fetch(endpoint, {
       method: "GET",
       headers: {
-        "api-key": apikey,
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session?.user.accessTokenBack}`,
       },
     });
     if (response.ok) {

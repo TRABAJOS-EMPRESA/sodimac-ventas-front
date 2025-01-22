@@ -39,7 +39,8 @@ export async function getOpportunitiesByIdExecutive(
     const response = await fetch(endpoint, {
       method: "GET",
       headers: {
-        "api-key": apikey,
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session?.user.accessTokenBack}`,
       },
       next: {tags: ['opportunities']}
     });
