@@ -81,7 +81,7 @@ export const config = {
     "/auth",
     "/login",
     "/auth/login",
-    // "/escritorio-ejecutivo/:path*",
-    // "/escritorio-subgerente/:path*",
+    "/escritorio-ejecutivo/:path*",
+    "/escritorio-subgerente/:path*",
   ],
 };
