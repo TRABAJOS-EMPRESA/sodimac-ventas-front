@@ -79,7 +79,7 @@ function Charts(props: ChartsDeskData) {
       {chartsDesk.map((chart, index) => (
         <div
           key={chart.id || index}
-          className="w-64 h-48 flex flex-col bg-white rounded-xl p-4 justify-between shadow-lg"
+          className="w-full md:w-64 md:h-48 flex flex-col bg-white rounded-xl p-4 justify-between shadow-lg"
         >
           <h3 className="font-bold">{chart.title}</h3>
           <div className="flex justify-between">

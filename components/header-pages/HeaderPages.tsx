@@ -19,16 +19,16 @@ async function HeaderPages(props: Props) {
 
   const session = await auth();
   return (
-    <div className="flex justify-between items-center w-full mb-10">
+    <div className="flex md:flex-row flex-col justify-between items-start md:items-center w-full mb-5">
       <h1 className="text-2xl font-bold">{titleHeader}</h1>
-      <div className="flex">
+      <div className="flex md:flex-row flex-col items-start gap-2 mt-5">
         {buttonLink && (
-          <Button variant={"ghost"} className="hover:bg-transparent">
+          <Button variant={"ghost"} className="hover:bg-transparent flex flex-col items-start p-0">
             <Link
               href={route}
-              className="border-2 flex border-primary-blue py-[6px] px-2 text-primary-blue rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+              className="border-2 flex border-primary-blue py-[6px] px-6 md:px-2 text-primary-blue rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
             >
-              <ChevronLeft className="ease-in-out w-10 h-10" />
+              <ChevronLeft className="ease-in-out w-9 h-10" />
               Volver a {routeTitle}
             </Link>
           </Button>

@@ -29,7 +29,7 @@ async function DeskExecutivePage() {
         </span>
       </div>
 
-      <div className="grid grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5 w-full">
         <Charts
           opportunitiesStart={{
             id: "1",
@@ -69,7 +69,7 @@ async function DeskExecutivePage() {
         <h1 className="text-2xl font-bold">Mis tareas</h1>
       </div>
 
-      <div className="grid grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5 w-full">
         <ChartsTasks
           taskStart={{
             id: "1",

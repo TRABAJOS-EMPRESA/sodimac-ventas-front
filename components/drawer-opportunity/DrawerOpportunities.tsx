@@ -46,7 +46,7 @@ function DrawerOpportunities(props: Props) {
       {/* Drawer */}
       <div
         className={cn(
-          "fixed top-0 right-0 h-screen w-[900px] bg-background z-50 shadow-lg transform transition-transform duration-300 ease-in-out",
+          "fixed top-0 right-0 h-screen w-full md:w-[900px] bg-background z-50 shadow-lg transform transition-transform duration-300 ease-in-out",
           isOpen ? "translate-x-0" : "translate-x-full"
         )}
       >

@@ -252,7 +252,7 @@ function FormDrawerAddOpportunity(props: Props) {
   return (
     <div className="w-full max-w-4xl mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Crear nueva oportunidad</h1>
+        <h1 className="text-1xl md:text-2xl font-bold">Crear nueva oportunidad</h1>
         <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
           <X className="h-6 w-6" />
         </Button>
@@ -261,7 +261,7 @@ function FormDrawerAddOpportunity(props: Props) {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-[14px] font-semibold">
               Identificación del cliente y ubicación de la oportunidad
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -422,7 +422,7 @@ function FormDrawerAddOpportunity(props: Props) {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Contacto del asociado</h2>
+            <h2 className="text-[14px] md:text-lg font-semibold">Contacto del asociado</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField
                 control={form.control}
@@ -497,7 +497,7 @@ function FormDrawerAddOpportunity(props: Props) {
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">
+            <h2 className="text-[14px] md:text-lg font-semibold">
               Características de la oportunidad
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -683,17 +683,17 @@ function FormDrawerAddOpportunity(props: Props) {
             />
           </div>
 
-          <div className="flex justify-end gap-4">
+          <div className="flex md:justify-end gap-4">
             <Button
               onClick={() => setIsOpen(false)}
               type="button"
-              className="py-2 px-3 bg-gray-500 text-primary-white rounded-full "
+              className="py-2 px-3 w-full md:w-1/4 bg-gray-500 text-primary-white rounded-full "
             >
               Cancelar
             </Button>
             <Button
               type="submit"
-              className="py-2 px-3 bg-primary-blue text-primary-white rounded-full"
+              className="py-2 px-3 w-full md:w-1/4 bg-primary-blue text-primary-white rounded-full"
             >
               Crear oportunidad
             </Button>

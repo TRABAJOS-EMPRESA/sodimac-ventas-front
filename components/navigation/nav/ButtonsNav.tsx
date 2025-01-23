@@ -18,7 +18,6 @@ function ButtonsNav(props: Props) {
 
   const handleLogout = async () => {
     if (session?.user) {
-      console.log("session.user.accessTokenBack", session.user.accessTokenBack);
 
       const logout = await logoutUserBack(
         session.user.email,
@@ -40,15 +39,15 @@ function ButtonsNav(props: Props) {
   return (
     <SessionProvider session={session}>
       <div>
-        <div className=" left-20 top-2 relative rounded-full w-6 h-6 bg-primary-blue text-primary-white flex items-center justify-center">
+        <div className="left-16 md:left-16 top-2 relative rounded-full w-6 h-6 bg-primary-blue text-primary-white flex items-center justify-center">
           3
         </div>
 
         <div className="flex space-x-5">
           <div onClick={() => handleLogout()} className="pb-1">
-            <LogOut size={34} className="text-primary-blue cursor-pointer" />
+            <LogOut size={29} className="text-primary-blue cursor-pointer" />
           </div>
-          <div className="pb-1">{getBellSVG()}</div>
+          <div className="pb-1">{getBellSVG({ w: "30", h: "30" })}</div>
         </div>
       </div>
     </SessionProvider>

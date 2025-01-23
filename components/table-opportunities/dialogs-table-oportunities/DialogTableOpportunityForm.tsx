@@ -85,7 +85,7 @@ function DialogTableOpportunityForm(props: Props) {
 
   return (
     <Dialog open={!!opportunity}  onOpenChange={onClose}>
-      <DialogContent className="max-w-[1200px] max-h-[calc(100vh-100px)] overflow-y-auto p-10">
+      <DialogContent className="md:max-w-[1200px] max-h-[calc(100vh-100px)] overflow-y-auto p-10">
         <div className="flex h-full">
           <div className="flex-1 p-6">
             <DialogHeader className="pb-6">
@@ -110,7 +110,7 @@ function DialogTableOpportunityForm(props: Props) {
                     Datos de la oportunidad hija
                   </h3>
 
-                  <div className="grid grid-cols-3 gap-6">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                     <FormField
                       control={form.control}
                       name="startDate"

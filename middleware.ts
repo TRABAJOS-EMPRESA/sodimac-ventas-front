@@ -44,10 +44,10 @@ export async function middleware(req: NextRequest) {
 
   const { role } = token || {};
 
-  if (!role || role == "") {
-    console.log("No hay rol en el token, redirigiendo a login");
-    return NextResponse.redirect(new URL("/403", req.url));
-  }
+  // if (!role || role == "") {
+  //   console.log("No hay rol en el token, redirigiendo a login");
+  //   return NextResponse.redirect(new URL("/403", req.url));
+  // }
 
   if ((path === "/auth/login" || path === "/") && role) {
     console.log("Usuario autenticado, rol:", role);
@@ -81,7 +81,7 @@ export const config = {
     "/auth",
     "/login",
     "/auth/login",
-    "/escritorio-ejecutivo/:path*",
-    "/escritorio-subgerente/:path*",
+    // "/escritorio-ejecutivo/:path*",
+    // "/escritorio-subgerente/:path*",
   ],
 };

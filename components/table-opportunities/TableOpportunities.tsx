@@ -20,8 +20,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChevronUpIcon,
   Eye,
   FileDown,
   FilterX,
@@ -63,6 +65,7 @@ function TableOpportunities(props: Props) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] =
     useState<Opportunity | null>(null);
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
 
   useEffect(() => {
     const mapData = async () => {
@@ -74,8 +77,8 @@ function TableOpportunities(props: Props) {
               id: child.id,
               estado: child.status?.status || "Sin estado",
               oportunidadPadre: opportunity.opportunityName || "Sin nombre",
-              oportunidadHija: String(child.productLine.name) || "Sin línea", // Conversión explícita a string
-              tipoProyecto: String(opportunity.projectType.name) || "Sin tipo", // Conversión explícita a string
+              oportunidadHija: String(child.productLine.name) || "Sin línea",
+              tipoProyecto: String(opportunity.projectType.name) || "Sin tipo",
               nombreCliente: opportunity.client?.name || "Cliente desconocido",
               rut: opportunity.client?.rut || "Sin RUT",
               ingresos: child.availableBudget || 0,
@@ -108,6 +111,25 @@ function TableOpportunities(props: Props) {
 
     mapData();
   }, [response, stateFilter]);
+
+  const handleCardClick = (id: string) => {
+    setExpandedCardId(expandedCardId === id ? null : id);
+  };
+
+  const paginatedFilteredData = filteredData.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+  const handlePageChange = (newPage: number) => {
+    setLoading(true);
+    setTimeout(() => {
+      setCurrentPage(newPage);
+      setLoading(false);
+    }, 500);
+  };
 
   const handleFilterChange = (key: keyof Opportunity, value: string) => {
     const sourceData = stateFilter
@@ -151,13 +173,6 @@ function TableOpportunities(props: Props) {
     );
   };
 
-  const paginatedFilteredData = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
-
   const handleOpenDialog = (
     opportunity: React.SetStateAction<Opportunity | null>
   ) => {
@@ -168,14 +183,6 @@ function TableOpportunities(props: Props) {
   const handleCloseDialog = () => {
     setSelectedOpportunity(null);
     setIsDialogOpen(false);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    setLoading(true);
-    setTimeout(() => {
-      setCurrentPage(newPage);
-      setLoading(false);
-    }, 500);
   };
 
   const handleDragStart = (
@@ -208,186 +215,321 @@ function TableOpportunities(props: Props) {
   };
 
   return (
-    <div className="min-w-[1200px] max-w-[1200px] ">
-      <div className="w-full flex items-center gap-2 bg-gray-100 py-4 pl-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
-        <Button
-          className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-          onClick={clearFilter}
-        >
-          <FilterX className="mr-2 h-4 w-4" />
-          Reestablecer Tabla
-        </Button>
-
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out">
-              <Settings2 className="mr-2 h-4 w-4" />
-              Configurar tabla
+    <div>
+      {/* Vista de Escritorio */}
+      <div className="hidden md:block">
+        <div className="min-w-[1200px] max-w-[1200px]">
+          <div className="w-full flex items-center gap-2 bg-gray-100 py-4 pl-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
+            <Button
+              className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+              onClick={clearFilter}
+            >
+              <FilterX className="mr-2 h-4 w-4" />
+              Reestablecer Tabla
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[800px] fade-in">
-            <DialogHeader>
-              <DialogTitle>Columnas tabla de oportunidades</DialogTitle>
-              <DialogDescription>
-                En esta sección podrá marcar las columnas que desee visualizar.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid grid-cols-3 gap-4 py-4">
-              {columns.map((column) => (
-                <div
-                  key={column.key}
-                  className="flex items-center justify-between"
-                >
-                  <span className="text-sm">{column.label}</span>
-                  <Switch
-                    checked={column.visible}
-                    className="bg-blue-600"
-                    onCheckedChange={() => toggleColumn(column.key)}
-                  />
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out">
+                  <Settings2 className="mr-2 h-4 w-4" />
+                  Configurar tabla
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[800px] fade-in">
+                <DialogHeader>
+                  <DialogTitle>Columnas tabla de oportunidades</DialogTitle>
+                  <DialogDescription>
+                    En esta sección podrá marcar las columnas que desee
+                    visualizar.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-3 gap-4 py-4">
+                  {columns.map((column) => (
+                    <div
+                      key={column.key}
+                      className="flex items-center justify-between"
+                    >
+                      <span className="text-sm">{column.label}</span>
+                      <Switch
+                        checked={column.visible}
+                        className="bg-blue-600"
+                        onCheckedChange={() => toggleColumn(column.key)}
+                      />
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <div className="flex justify-end">
-              <Button
-                className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-                onClick={() => saveConfig()}
-              >
-                Guardar Configuración
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+                <div className="flex justify-end">
+                  <Button
+                    className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+                    onClick={() => saveConfig()}
+                  >
+                    Guardar Configuración
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
 
-        <Button
-          className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-          onClick={() => exportToPDF(paginatedFilteredData, columns)}
-        >
-          <FileDown className="mr-2 h-4 w-4" />
-          Exportar como PDF
-        </Button>
+            <Button
+              className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+              onClick={() => exportToPDF(paginatedFilteredData, columns)}
+            >
+              <FileDown className="mr-2 h-4 w-4" />
+              Exportar como PDF
+            </Button>
+          </div>
+
+          <div className="border">
+            <Table>
+              <TableHeader className="bg-gray-100">
+                <TableRow>
+                  {columns.map((column, index) =>
+                    column.visible ? (
+                      <TableHead
+                        key={column.key}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index)}
+                      >
+                        <div className="flex items-center fade-in">
+                          {activeFilter === column.key ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                className="border rounded px-2 py-1 text-sm"
+                                placeholder={`Filtrar por ${column.label}`}
+                                onChange={(e) =>
+                                  handleFilterChange(column.key, e.target.value)
+                                }
+                              />
+                              <X
+                                className="cursor-pointer text-red-500"
+                                onClick={clearFilter}
+                              />
+                            </div>
+                          ) : (
+                            <span
+                              className="cursor-pointer font-bold"
+                              onClick={() => setActiveFilter(column.key)}
+                            >
+                              {column.label}
+                            </span>
+                          )}
+                        </div>
+                      </TableHead>
+                    ) : null
+                  )}
+                  <TableHead>Acción</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className="fade-in">
+                {loading
+                  ? Array.from({ length: 10 }).map((_, index) => (
+                      <TableRow key={index}>
+                        {Array.from({ length: columns.length }).map(
+                          (_, idx) => (
+                            <TableCell key={idx}>
+                              <Skeleton className="h-9 min-w-full rounded bg-gray-200 animate-pulse" />
+                            </TableCell>
+                          )
+                        )}
+                      </TableRow>
+                    ))
+                  : paginatedFilteredData.map((row) => (
+                      <TableRow key={row.id} className="fade-in">
+                        {columns
+                          .filter((col) => col.visible)
+                          .map((column) => (
+                            <TableCell key={column.key}>
+                              {column.key === "estado" ? (
+                                <Badge
+                                  className={
+                                    {
+                                      inicio: "bg-orange-500 text-white",
+                                      "POR VENCER": "bg-red-500 text-white",
+                                      cotizada: "bg-blue-500 text-white",
+                                      TERMINADA: "bg-green-500 text-white",
+                                    }[row.estado] || "bg-gray-300 text-black"
+                                  }
+                                >
+                                  {row.estado}
+                                </Badge>
+                              ) : column.key === "ingresos" ? (
+                                `$${row[column.key].toLocaleString()}`
+                              ) : (
+                                row[column.key]
+                              )}
+                            </TableCell>
+                          ))}
+                        <TableCell>
+                          <Button
+                            className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+                            onClick={() => handleOpenDialog(row)}
+                          >
+                            <Eye className="h-4 w-4 text-blue-500" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          <div className="flex justify-between items-center py-4">
+            <Button
+              disabled={currentPage === 1}
+              className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+              onClick={() => handlePageChange(currentPage - 1)}
+            >
+              <ChevronLeftIcon /> Anterior
+            </Button>
+            <span>
+              Página {currentPage} de {totalPages}
+            </span>
+            <Button
+              disabled={currentPage === totalPages}
+              className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+              onClick={() => handlePageChange(currentPage + 1)}
+            >
+              Siguiente <ChevronRightIcon />
+            </Button>
+          </div>
+          {isDialogOpen && selectedOpportunity && (
+            <DialogTableOpportunityForm
+              opportunity={selectedOpportunity!}
+              onClose={handleCloseDialog}
+            />
+          )}
+        </div>
       </div>
 
-      <div className="border">
-        <Table>
-          <TableHeader className="bg-gray-100">
-            <TableRow>
-              {columns.map((column, index) =>
-                column.visible ? (
-                  <TableHead
-                    key={column.key}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, index)}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, index)}
-                  >
-                    <div className="flex items-center  fade-in">
-                      {activeFilter === column.key ? (
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            className="border rounded px-2 py-1 text-sm"
-                            placeholder={`Filtrar por ${column.label}`}
-                            onChange={(e) =>
-                              handleFilterChange(column.key, e.target.value)
-                            }
-                          />
-                          <X
-                            className="cursor-pointer text-red-500"
-                            onClick={clearFilter}
-                          />
-                        </div>
-                      ) : (
-                        <span
-                          className="cursor-pointer font-bold"
-                          onClick={() => setActiveFilter(column.key)}
-                        >
-                          {column.label}
-                        </span>
-                      )}
-                    </div>
-                  </TableHead>
-                ) : null
-              )}
-              <TableHead>Acción</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody className=" fade-in">
+      {/* Vista Móvil */}
+      <div className="block md:hidden">
+        <div className="w-full p-2">
+          <div className="w-full flex flex-wrap gap-2 bg-gray-100 py-4 px-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
+            <Button
+              className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+              onClick={clearFilter}
+            >
+              <FilterX className="mr-2 h-4 w-4" />
+              Reestablecer
+            </Button>
+
+            <Button
+              className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+              onClick={() => exportToPDF(paginatedFilteredData, columns)}
+            >
+              <FileDown className="mr-2 h-4 w-4" />
+              Exportar PDF
+            </Button>
+          </div>
+
+          <div className="space-y-2 p-2">
             {loading
-              ? Array.from({ length: 10 }).map((_, index) => (
-                  <TableRow key={index}>
-                    {Array.from({ length: columns.length }).map((_, idx) => (
-                      <TableCell key={idx}>
-                        <Skeleton className="h-9 min-w-full rounded bg-gray-200 animate-pulse " />
-                      </TableCell>
-                    ))}
-                  </TableRow>
+              ? Array.from({ length: 5 }).map((_, index) => (
+                  <div key={index} className="p-4 bg-white shadow rounded-lg">
+                    <Skeleton className="h-6 w-full rounded bg-gray-200 animate-pulse" />
+                  </div>
                 ))
               : paginatedFilteredData.map((row) => (
-                  <TableRow key={row.id} className="fade-in">
-                    {columns
-                      .filter((col) => col.visible)
-                      .map((column) => (
-                        <TableCell key={column.key}>
-                          {column.key === "estado" ? (
-                            <Badge
-                              className={
-                                {
-                                  inicio: "bg-orange-500 text-white",
-                                  "POR VENCER": "bg-red-500 text-white",
-                                  cotizada: "bg-blue-500 text-white",
-                                  TERMINADA: "bg-green-500 text-white",
-                                }[row.estado] || "bg-gray-300 text-black"
-                              }
-                            >
-                              {row.estado}
-                            </Badge>
-                          ) : column.key === "ingresos" ? (
-                            `$${row[column.key].toLocaleString()}`
-                          ) : (
-                            row[column.key]
-                          )}
-                        </TableCell>
-                      ))}
-                    <TableCell>
-                      <Button
-                        className=" text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-                        onClick={() => handleOpenDialog(row)}
+                  <div
+                    key={row.id}
+                    className="p-4 bg-white shadow rounded-lg"
+                    onClick={() => handleCardClick(row.id)}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="font-bold">{row.oportunidadPadre}</p>
+                        <p>{row.nombreCliente}</p>
+                      </div>
+                      <Badge
+                        className={
+                          {
+                            inicio: "bg-orange-500 text-white",
+                            "POR VENCER": "bg-red-500 text-white",
+                            cotizada: "bg-blue-500 text-white",
+                            TERMINADA: "bg-green-500 text-white",
+                          }[row.estado] || "bg-gray-300 text-black"
+                        }
                       >
-                        <Eye className="h-4 w-4 text-blue-500" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-          </TableBody>
-        </Table>
-      </div>
+                        {row.estado}
+                      </Badge>
+                    </div>
+                    {expandedCardId === row.id && (
+                      <div className="mt-4 space-y-2 fade-in">
+                        <p>
+                          <strong>Oportunidad Hija:</strong>{" "}
+                          {row.oportunidadHija}
+                        </p>
+                        <p>
+                          <strong>Tipo de Proyecto:</strong> {row.tipoProyecto}
+                        </p>
+                        <p>
+                          <strong>RUT:</strong> {row.rut}
+                        </p>
+                        <p>
+                          <strong>Ingresos:</strong> $
+                          {row.ingresos.toLocaleString()}
+                        </p>
+                        <p>
+                          <strong>Fecha Inicio:</strong> {row.fechaInicio}
+                        </p>
+                        <p>
+                          <strong>Fecha Cierre:</strong> {row.fechaCierre}
+                        </p>
+                        <Button
+                          className="mt-2 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+                          onClick={() => handleOpenDialog(row)}
+                        >
+                          <Eye className="h-4 w-4 text-blue-500" />
+                          Ver Detalles
+                        </Button>
+                      </div>
+                    )}
 
-      <div className="flex justify-between items-center py-4">
-        <Button
-          disabled={currentPage === 1}
-          className=" text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-          onClick={() => handlePageChange(currentPage - 1)}
-        >
-          <ChevronLeftIcon /> Anterior
-        </Button>
-        <span>
-          Página {currentPage} de {totalPages}
-        </span>
-        <Button
-          disabled={currentPage === totalPages}
-          className=" text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-          onClick={() => handlePageChange(currentPage + 1)}
-        >
-          Siguiente <ChevronRightIcon />
-        </Button>
+                    <div className="flex justify-center items-center mt-2">
+                      {expandedCardId === row.id ? (
+                        <ChevronUpIcon className="h-5 w-5 text-gray-600" />
+                      ) : (
+                        <ChevronDownIcon className="h-5 w-5 text-gray-600" />
+                      )}
+                    </div>
+                  </div>
+                ))}
+          </div>
+
+          {paginatedFilteredData.length > 0 && (
+            <div className="flex justify-between items-center py-4 px-2">
+              <Button
+                disabled={currentPage === 1}
+                className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                <ChevronLeftIcon /> Anterior
+              </Button>
+              <span>
+                <span className="block sm:hidden">Página</span> {currentPage} de{" "}
+                {totalPages}
+              </span>
+              <Button
+                disabled={currentPage === totalPages}
+                className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Siguiente <ChevronRightIcon />
+              </Button>
+            </div>
+          )}
+
+          {isDialogOpen && selectedOpportunity && (
+            <DialogTableOpportunityForm
+              opportunity={selectedOpportunity!}
+              onClose={handleCloseDialog}
+            />
+          )}
+        </div>
       </div>
-      {isDialogOpen && selectedOpportunity && (
-        <DialogTableOpportunityForm
-          opportunity={selectedOpportunity!}
-          onClose={handleCloseDialog}
-        />
-      )}
     </div>
   );
 }
