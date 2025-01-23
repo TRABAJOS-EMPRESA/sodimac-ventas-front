@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { CalendarIcon, X } from "lucide-react";
+import { CalendarIcon, Loader2, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -71,6 +71,7 @@ function FormDrawerAddOpportunity(props: Props) {
   const [filteredClients, setFilteredClients] = useState<GetClientResp[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   console.log("userId", userId);
 
@@ -96,6 +97,8 @@ function FormDrawerAddOpportunity(props: Props) {
   });
 
   async function onSubmit(data: OpportunityFormValues) {
+
+    setIsLoading(true)
     const mappedData = {
       opportunityName: data.opportunityName,
       workDirection: data.address,
@@ -173,6 +176,8 @@ function FormDrawerAddOpportunity(props: Props) {
       }
     } catch (error) {
       console.error("Unexpected error:", error);
+    }finally{
+      setIsLoading(false)
     }
   }
 
@@ -691,11 +696,15 @@ function FormDrawerAddOpportunity(props: Props) {
             >
               Cancelar
             </Button>
+
+           
             <Button
               type="submit"
               className="py-2 px-3 w-full md:w-1/4 bg-primary-blue text-primary-white rounded-full"
             >
-              Crear oportunidad
+               {
+              isLoading ? <Loader2 className="animate-spin" /> : "Crear Oportunidad"
+            }
             </Button>
           </div>
         </form>
