@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/dialog"; // Asegúrate de importar tus componentes de diálogo
 import { Session } from "next-auth";
 import { logoutUserBack } from "@/actions/user/logout-user-back.action";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 interface LogoutDialogProps {
   isOpen: boolean;
@@ -21,8 +23,10 @@ interface LogoutDialogProps {
 
 export function LogoutDialog({ isOpen, onClose, session }: LogoutDialogProps) {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleConfirmLogout = async () => {
+    setIsLoading(true);
     if (session?.user) {
       const logout = await logoutUserBack(
         session.user.email,
@@ -40,7 +44,10 @@ export function LogoutDialog({ isOpen, onClose, session }: LogoutDialogProps) {
     } else {
       console.error("User session is undefined");
     }
-    onClose(); // Cierra el diálogo después de confirmar
+
+    setIsLoading(false);
+
+    onClose();
   };
 
   return (
@@ -50,11 +57,18 @@ export function LogoutDialog({ isOpen, onClose, session }: LogoutDialogProps) {
           <DialogTitle>¿Estás seguro de cerrar la sesión?</DialogTitle>
         </DialogHeader>
         <DialogFooter className="flex flex-row justify-center items-center gap-3">
-          <Button className=" border-1 border-primary-blue  text-primary-blue rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out" onClick={onClose}>
+          <Button
+            className="w-[120px] border-1 border-primary-blue  text-primary-blue rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+            onClick={onClose}
+          >
             Cancelar
           </Button>
-          <Button className="border  py-[19px] border-primary-red text-red-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-red-700 transition-all duration-150 ease-in-out hover:text-white"  variant="destructive" onClick={handleConfirmLogout}>
-            Cerrar Sesión
+          <Button
+            className="border w-[120px] py-[19px] border-primary-red text-red-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-red-700 transition-all duration-150 ease-in-out hover:text-white"
+            variant="destructive"
+            onClick={handleConfirmLogout}
+          >
+            {isLoading ? <Loader2 className="animate-spin" /> : "Cerrar Sesión"}
           </Button>
         </DialogFooter>
       </DialogContent>

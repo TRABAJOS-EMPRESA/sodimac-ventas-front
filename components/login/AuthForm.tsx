@@ -23,6 +23,8 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 // import { signIn } from "next-auth/react";
 import { signIn } from "next-auth/react";
+import { toast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 interface AuthFormProps<T extends FieldValues> {
   schema: ZodType<T>;
@@ -43,9 +45,33 @@ const AuthForm = <T extends FieldValues>({
   });
 
   const [seePass, setSeePass] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit: SubmitHandler<T> = async () => {
     onSubmit(form.getValues());
+  };
+
+  const handleLogin = async () => {
+    setIsLoading(true);
+    try {
+      await signIn("keycloak");
+
+      toast({
+        title: "Inicio de sesión exitoso",
+        description: "Redirigiendo...",
+        className: "bg-primary-blue text-primary-white",
+      });
+    } catch (error) {
+      console.log("Error de inicio de sesión:", error);
+
+      toast({
+        title: "Error",
+        description: `Error de inicio de sesión: ${error}`,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const buttonText = formType === "SIGN-IN" ? "Inicia Sesión" : "Registrate";
@@ -94,7 +120,7 @@ const AuthForm = <T extends FieldValues>({
                       />
                     </div>
                     <Input
-                    disabled
+                      disabled
                       required
                       type={
                         field.name === "password"
@@ -128,9 +154,16 @@ const AuthForm = <T extends FieldValues>({
       <Button
         className="bg-primary-white border border-primary-blue hover:bg-primary-blue hover:text-primary-white mt-2 text-primary-blue min-h-11 w-full rounded-full"
         disabled={form.formState.isSubmitting}
-        onClick={() => signIn("keycloak")}
+        onClick={() => handleLogin()}
       >
-        Inicia Sesión en <span className="font-bold">CAMP</span>
+        {isLoading ? (
+          <Loader2 className=" animate-spin" />
+        ) : (
+          <span>
+            {" "}
+            Inicia Sesión en <span className="font-bold">CAMP</span>
+          </span>
+        )}
       </Button>
     </Form>
   );
