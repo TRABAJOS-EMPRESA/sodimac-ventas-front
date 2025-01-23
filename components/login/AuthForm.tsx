@@ -54,13 +54,21 @@ const AuthForm = <T extends FieldValues>({
   const handleLogin = async () => {
     setIsLoading(true);
     try {
-      await signIn("keycloak");
+      const result = await signIn("keycloak");
 
-      toast({
-        title: "Inicio de sesión exitoso",
-        description: "Redirigiendo...",
-        className: "bg-primary-blue text-primary-white",
-      });
+      if (result?.error) {
+        toast({
+          title: "Error",
+          description: `Error de inicio de sesión: ${result.error}`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Inicio de sesión en proceso",
+          description: "Redirigiendo...",
+          className: "bg-primary-blue text-primary-white",
+        });
+      }
     } catch (error) {
       console.log("Error de inicio de sesión:", error);
 

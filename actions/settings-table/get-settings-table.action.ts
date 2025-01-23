@@ -21,7 +21,7 @@ export async function getSettingsTable(): Promise<ColumnConfig[] | ErrorResp> {
     };
     return error;
   }
-  const endpoint = `${process.env.BACKEND_URL}/settings/table-settings/get/${session?.user.id}`;
+  const endpoint = `${process.env.BACKEND_URL}/settings/executive/table/opportunity/get/${session?.user.id}`;
   // console.log("endpoint", endpoint);
   // console.log("apikey", apikey);
   

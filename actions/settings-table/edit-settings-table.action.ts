@@ -29,7 +29,7 @@ export async function editSettingsTable(
     };
   });
 
-  const endpoint = `${process.env.BACKEND_URL}/settings/table-settings/edit`;
+  const endpoint = `${process.env.BACKEND_URL}/settings/executive/table/opportunity/edit`;
 
   try {
     const response = await fetch(endpoint, {

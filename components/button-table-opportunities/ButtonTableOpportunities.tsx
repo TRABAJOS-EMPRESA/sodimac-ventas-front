@@ -23,6 +23,7 @@ function ButtonDashboardCustom(props: Props) {
     <Button
       className="flex shadow-md justify-center items-center space-x-2 w-full text-center py-1 px-2 rounded-full bg-primary-white text-primary-blue border border-primary-blue hover:bg-primary-blue hover:text-primary-white"
       onClick={() => goRoute()}
+      tabIndex={0}
     >
       {loading ? <Loader2 className="animate-spin" /> : props.title}
     </Button>

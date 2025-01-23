@@ -418,25 +418,28 @@ function TableOpportunities(props: Props) {
             </Table>
           </div>
 
-          <div className="flex justify-between items-center py-4">
-            <Button
-              disabled={currentPage === 1}
-              className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-              onClick={() => handlePageChange(currentPage - 1)}
-            >
-              <ChevronLeftIcon /> Anterior
-            </Button>
-            <span>
-              Página {currentPage} de {totalPages}
-            </span>
-            <Button
-              disabled={currentPage === totalPages}
-              className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-              onClick={() => handlePageChange(currentPage + 1)}
-            >
-              Siguiente <ChevronRightIcon />
-            </Button>
-          </div>
+          {filteredData.length > 0 && (
+            <div className="flex justify-between items-center py-4">
+              <Button
+                disabled={currentPage === 1}
+                className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+                onClick={() => handlePageChange(currentPage - 1)}
+              >
+                <ChevronLeftIcon /> Anterior
+              </Button>
+              <span>
+                Página {currentPage} de {totalPages}
+              </span>
+              <Button
+                disabled={currentPage === totalPages}
+                className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+                onClick={() => handlePageChange(currentPage + 1)}
+              >
+                Siguiente <ChevronRightIcon />
+              </Button>
+            </div>
+          )}
+
           {isDialogOpen && selectedOpportunity && (
             <DialogTableOpportunityForm
               opportunity={selectedOpportunity!}
@@ -553,12 +556,13 @@ function TableOpportunities(props: Props) {
                 ))}
           </div>
 
-          {paginatedFilteredData.length > 0 && (
+          {filteredData.length > 0 && (
             <div className="flex justify-between items-center py-4 px-2">
               <Button
                 disabled={currentPage === 1}
                 className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
                 onClick={() => handlePageChange(currentPage - 1)}
+                tabIndex={0}
               >
                 <ChevronLeftIcon /> Anterior
               </Button>
@@ -568,6 +572,7 @@ function TableOpportunities(props: Props) {
               </span>
               <Button
                 disabled={currentPage === totalPages}
+                tabIndex={0}
                 className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
                 onClick={() => handlePageChange(currentPage + 1)}
               >
