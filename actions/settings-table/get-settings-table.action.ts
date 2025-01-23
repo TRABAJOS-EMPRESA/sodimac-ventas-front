@@ -1,7 +1,8 @@
 "use server";
 
+import { ColumnConfig } from "@/constants/column-config.constant";
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
-import { GetOpportunitiesByIDExecutive } from "@/interfaces/opportunities/get-opportunities-by-executiveId.interface";
+import { GetSettingsTable } from "@/interfaces/table-settings/get-settings-table.interface";
 
 import { auth } from "@/utils/auth";
 
@@ -10,11 +11,8 @@ export interface PaginationGetOpportunitiesByIdExecutive {
   limit: number;
 }
 
-export async function getOpportunitiesByIdExecutive(
-  pagination: PaginationGetOpportunitiesByIdExecutive
-): Promise<GetOpportunitiesByIDExecutive[] | ErrorResp | []> {
+export async function getSettingsTable(): Promise<ColumnConfig[] | ErrorResp> {
   const session = await auth();
-  console.log("session", session?.user.id);
   if (!session?.user.id) {
     const error: ErrorResp = {
       message: "No session found",
@@ -23,23 +21,24 @@ export async function getOpportunitiesByIdExecutive(
     };
     return error;
   }
-  const endpoint = `${process.env.BACKEND_URL}/opportunities/executive/child/filter?executiveId=${session?.user.id}&page=${pagination.page}&limit=${pagination.limit}`;
+  const endpoint = `${process.env.BACKEND_URL}/settings/table-settings/get/${session?.user.id}`;
   // console.log("endpoint", endpoint);
   // console.log("apikey", apikey);
-
+  
   try {
     const response = await fetch(endpoint, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${session?.user.accessTokenBack}`,
+        "Authorization": `Bearer ${session?.user.accessTokenBack}`,
       },
-      next: { tags: ["opportunities"] },
+      next: {tags: ['get-config-table']}
     });
     if (response.ok) {
-      const data: GetOpportunitiesByIDExecutive[] = await response.json();
-
-      return data;
+      const data: GetSettingsTable = await response.json();
+      console.log("settings", data.settings);
+      
+      return data.settings;
     } else {
       const errorData: ErrorResp = await response.json();
       console.log("errorData", errorData);

@@ -1,4 +1,5 @@
 import { getOpportunitiesByIdExecutive } from "@/actions/opportunities/get-opportunities-by-id-executive.action";
+import { getSettingsTable } from "@/actions/settings-table/get-settings-table.action";
 import HeaderPages from "@/components/header-pages/HeaderPages";
 import TableOpportunties from "@/components/table-opportunities/TableOpportunities";
 import ROUTES_EXECUTIVE from "@/constants/routes";
@@ -6,12 +7,14 @@ import React from "react";
 
 async function OportunitiesChildPage() {
 
-  const response = await getOpportunitiesByIdExecutive({
+  const opportunitiesResp = await getOpportunitiesByIdExecutive({
     page: 1,
     limit: 10000,
   });
 
-  console.log("response", response);
+  const settingsTable = await getSettingsTable();
+
+  // console.log("response", opportunitiesResp);
   return (
     <div className="flex flex-col w-full">
       <HeaderPages
@@ -22,7 +25,7 @@ async function OportunitiesChildPage() {
         route={ROUTES_EXECUTIVE.DESK_EXECUTIVE}
         routeTitle="Dashboard"
       />
-      <TableOpportunties  response={response}/>
+      <TableOpportunties settingsTable={settingsTable}  opportunitiesResp={opportunitiesResp}/>
     </div>
   );
 }

@@ -27,6 +27,7 @@ import {
   Eye,
   FileDown,
   FilterX,
+  Loader2,
   Settings2,
   X,
 } from "lucide-react";
@@ -43,27 +44,35 @@ import { GetOpportunitiesByIDExecutive } from "@/interfaces/opportunities/get-op
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
 import { exportToPDF } from "@/utils/exportToPDF";
 import { Input } from "../ui/input";
+import { editSettingsTable } from "@/actions/settings-table/edit-settings-table.action";
+import { toast } from "@/hooks/use-toast";
 
 interface Props {
-  response: GetOpportunitiesByIDExecutive[] | ErrorResp | [];
+  opportunitiesResp: GetOpportunitiesByIDExecutive[] | ErrorResp | [];
+  settingsTable: ColumnConfig[] | ErrorResp;
 }
 
 function TableOpportunities(props: Props) {
-  const { response } = props;
+  const { opportunitiesResp, settingsTable } = props;
   const searchParams = useSearchParams();
   const stateFilter = searchParams.get("state");
 
-  const [columns, setColumns] = useState<ColumnConfig[]>(columnConfig);
+  // TODO como respondo un error o la config debo preguntar si es array
+  const [columns, setColumns] = useState<ColumnConfig[]>(
+    Array.isArray(settingsTable) ? settingsTable : []
+  );
   const initialColumnOrder = [...columnConfig];
   const [data, setData] = useState<Opportunity[]>([]);
   const [filteredData, setFilteredData] = useState<Opportunity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingSaveConfig, setLoadingSaveConfig] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [activeFilter, setActiveFilter] = useState<keyof Opportunity | null>(
     null
   );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDialogConfigOpen, setIsDialogConfigOpen] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] =
     useState<Opportunity | null>(null);
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
@@ -73,8 +82,8 @@ function TableOpportunities(props: Props) {
     const mapData = async () => {
       setLoading(true);
       try {
-        if (Array.isArray(response)) {
-          const mappedData = response.flatMap((opportunity) =>
+        if (Array.isArray(opportunitiesResp)) {
+          const mappedData = opportunitiesResp.flatMap((opportunity) =>
             opportunity.childs.map((child) => ({
               id: child.id,
               estado: child.status?.status || "Sin estado",
@@ -112,7 +121,7 @@ function TableOpportunities(props: Props) {
     };
 
     mapData();
-  }, [response, stateFilter]);
+  }, [opportunitiesResp, stateFilter]);
 
   const handleCardClick = (id: string) => {
     setExpandedCardId(expandedCardId === id ? null : id);
@@ -212,10 +221,34 @@ function TableOpportunities(props: Props) {
     setColumns(updatedColumns);
   };
 
-  const saveConfig = () => {
-    console.log(columns);
-  };
+  const saveConfig = async () => {
+    setLoadingSaveConfig(true);
+    try {
+      const respEditSettings = await editSettingsTable(columns);
+      console.log("editSettings", respEditSettings);
 
+      toast({
+        title: "Configuración guardada",
+        description:
+          "La configuración de la tabla se ha guardado correctamente",
+        className: "bg-primary-blue text-primary-white",
+        duration: 5000,
+      });
+
+      setIsDialogConfigOpen(false);
+    } catch (error) {
+      console.log("error", error);
+
+      toast({
+        title: "Error",
+        description: "No se pudo guardar la configuración",
+        variant: "destructive",
+        duration: 2000,
+      });
+    } finally {
+      setLoadingSaveConfig(false);
+    }
+  };
   return (
     <div>
       {/* Vista de Escritorio */}
@@ -230,7 +263,10 @@ function TableOpportunities(props: Props) {
               Reestablecer Tabla
             </Button>
 
-            <Dialog>
+            <Dialog
+              open={isDialogConfigOpen}
+              onOpenChange={setIsDialogConfigOpen}
+            >
               <DialogTrigger asChild>
                 <Button className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out">
                   <Settings2 className="mr-2 h-4 w-4" />
@@ -263,10 +299,14 @@ function TableOpportunities(props: Props) {
 
                 <div className="flex justify-end">
                   <Button
-                    className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+                    className="w-1/3 border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
                     onClick={() => saveConfig()}
                   >
-                    Guardar Configuración
+                    {loadingSaveConfig ? (
+                      <Loader2 className="animate-spin" />
+                    ) : (
+                      "Guardar configuración"
+                    )}
                   </Button>
                 </div>
               </DialogContent>
