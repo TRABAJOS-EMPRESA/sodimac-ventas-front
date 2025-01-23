@@ -1,41 +1,24 @@
 "use client";
 
-import { logoutUserBack } from "@/actions/user/logout-user-back.action";
-import { getBellSVG } from "@/utils/icons-svg-data";
-// import { signOut } from "next-auth/react";
 import { LogOut } from "lucide-react";
-import { SessionProvider, signOut } from "next-auth/react";
+import { SessionProvider } from "next-auth/react";
 import { Session } from "next-auth";
-import React from "react";
-import { useRouter } from "next/navigation";
+import React, { useState } from "react";
+import { getBellSVG } from "@/utils/icons-svg-data";
+import { LogoutDialog } from "@/components/login/LogoutDialog";
 
 interface Props {
   session: Session;
 }
+
 function ButtonsNav(props: Props) {
   const { session } = props;
-  const router = useRouter();
+  const [isLogoutDialogOpen, setIsLogoutDialogOpen] = useState(false);
 
-  const handleLogout = async () => {
-    if (session?.user) {
-
-      const logout = await logoutUserBack(
-        session.user.email,
-        session.user.accessTokenBack!
-      );
-      console.log("logout --->", logout);
-
-      if (
-        logout.message === "Logout successful" ||
-        logout.message === "Token is blacklisted"
-      ) {
-        await signOut({ redirect: false });
-        router.push("/login");
-      }
-    } else {
-      console.error("User session is undefined");
-    }
+  const handleLogoutClick = () => {
+    setIsLogoutDialogOpen(true); // Abre el diálogo de confirmación
   };
+
   return (
     <SessionProvider session={session}>
       <div>
@@ -44,11 +27,18 @@ function ButtonsNav(props: Props) {
         </div>
 
         <div className="flex space-x-5">
-          <div onClick={() => handleLogout()} className="pb-1">
+          <div onClick={handleLogoutClick} className="pb-1">
             <LogOut size={29} className="text-primary-blue cursor-pointer" />
           </div>
           <div className="pb-1">{getBellSVG({ w: "30", h: "30" })}</div>
         </div>
+
+        {/* Diálogo de confirmación */}
+        <LogoutDialog
+          isOpen={isLogoutDialogOpen}
+          onClose={() => setIsLogoutDialogOpen(false)}
+          session={session}
+        />
       </div>
     </SessionProvider>
   );

@@ -19,7 +19,7 @@ async function HeaderPages(props: Props) {
 
   const session = await auth();
   return (
-    <div className="flex md:flex-row flex-col justify-between items-start md:items-center w-full mb-5">
+    <div className="flex p-3 md:p-0 md:flex-row flex-col justify-between items-start md:items-center w-full mb-5">
       <h1 className="text-2xl font-bold">{titleHeader}</h1>
       <div className="flex md:flex-row flex-col items-start gap-2 mt-5">
         {buttonLink && (

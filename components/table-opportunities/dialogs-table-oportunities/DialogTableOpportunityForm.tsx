@@ -85,9 +85,9 @@ function DialogTableOpportunityForm(props: Props) {
 
   return (
     <Dialog open={!!opportunity}  onOpenChange={onClose}>
-      <DialogContent className="md:max-w-[1200px] max-h-[calc(100vh-100px)] overflow-y-auto p-10">
-        <div className="flex h-full">
-          <div className="flex-1 p-6">
+      <DialogContent className="w-full md:max-w-[1200px] max-h-[calc(100vh-100px)] overflow-y-auto p-10">
+        <div className="flex flex-col md:flex-row h-full">
+          <div className="md:flex-1 md:p-6">
             <DialogHeader className="pb-6">
               <DialogTitle className="text-2xl font-semibold">
                 {opportunity.oportunidadPadre}
@@ -110,7 +110,7 @@ function DialogTableOpportunityForm(props: Props) {
                     Datos de la oportunidad hija
                   </h3>
 
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                  <div className="grid  grid-cols-1 md:grid-cols-3 gap-6">
                     <FormField
                       control={form.control}
                       name="startDate"
@@ -291,18 +291,18 @@ function DialogTableOpportunityForm(props: Props) {
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <div className="md:space-y-4 w-full">
                   <h3 className="text-lg font-semibold">Comentarios</h3>
-                  <div className="space-y-4">
+                  <div className="md:space-y-4 w-full">
                     <div className="flex gap-3">
-                      <Avatar className="h-8 w-8" />
+                      <Avatar className="md:h-8 md:w-8" />
                       <Input placeholder="Comentario" className="h-10" />
                     </div>
                     {[
                       "Cliente contactado, sin mayor respuesta, indica volver a llamar el 15/01/2025",
                       "Cliente contactado, sin mayor respuesta, indica volver a llamar el 15/01/2025",
                     ].map((comment, i) => (
-                      <div key={i} className="flex gap-3">
+                      <div key={i} className="md:flex md:gap-3">
                         <Avatar className="h-8 w-8" />
                         <div className="flex-1 rounded-lg border bg-gray-50/50 p-3">
                           <div className="text-sm">{comment}</div>
@@ -315,16 +315,16 @@ function DialogTableOpportunityForm(props: Props) {
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4">
+                <div className="flex w-full md:justify-end gap-3 pt-4">
                   <Button
                     type="button"
                     variant="secondary"
                     onClick={() => onClose()}
-                    className="h-9"
+                    className="h-9 w-full"
                   >
                     Cancelar
                   </Button>
-                  <Button type="submit" className="h-9">
+                  <Button type="submit" className="h-9 w-full">
                     Guardar cambios
                   </Button>
                 </div>
@@ -332,8 +332,8 @@ function DialogTableOpportunityForm(props: Props) {
             </Form>
           </div>
 
-          <div className="w-[300px] border-l">
-            <div className="p-6 space-y-6">
+          <div className="w-full md:w-[300px] md:border-l">
+            <div className="md:p-6 pt-6 space-y-6">
               <Select>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Seleccionar estado" />

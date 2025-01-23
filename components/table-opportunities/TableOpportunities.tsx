@@ -42,6 +42,7 @@ import {
 import { GetOpportunitiesByIDExecutive } from "@/interfaces/opportunities/get-opportunities-by-executiveId.interface";
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
 import { exportToPDF } from "@/utils/exportToPDF";
+import { Input } from "../ui/input";
 
 interface Props {
   response: GetOpportunitiesByIDExecutive[] | ErrorResp | [];
@@ -66,6 +67,7 @@ function TableOpportunities(props: Props) {
   const [selectedOpportunity, setSelectedOpportunity] =
     useState<Opportunity | null>(null);
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState(""); // Estado para el término de búsqueda
 
   useEffect(() => {
     const mapData = async () => {
@@ -407,7 +409,19 @@ function TableOpportunities(props: Props) {
       {/* Vista Móvil */}
       <div className="block md:hidden">
         <div className="w-full p-2">
-          <div className="w-full flex flex-wrap gap-2 bg-gray-100 py-4 px-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
+          <div className="w-full flex flex-wrap justify-center gap-2 bg-gray-100 py-4 px-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
+            {/* Input de búsqueda version mobil */}
+            <Input
+              type="text"
+              placeholder="Buscar..."
+              className="w-full p-2 border-[1px] border-primary-blue rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                handleFilterChange("oportunidadPadre", e.target.value); // Reutilizamos handleFilterChange
+              }}
+            />
+
             <Button
               className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
               onClick={clearFilter}
