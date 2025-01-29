@@ -3,9 +3,13 @@ import { getSettingsTable } from "@/actions/settings-table/get-settings-table.ac
 import HeaderPages from "@/components/header-pages/HeaderPages";
 import TableOpportunties from "@/components/table-opportunities/TableOpportunities";
 import ROUTES_EXECUTIVE from "@/constants/routes";
+import { auth } from "@/utils/auth";
 import React from "react";
 
+
 async function OportunitiesChildPage() {
+
+  const session = await auth()
 
   const opportunitiesResp = await getOpportunitiesByIdExecutive({
     page: 1,
@@ -13,6 +17,7 @@ async function OportunitiesChildPage() {
   });
 
   const settingsTable = await getSettingsTable();
+  
 
   // console.log("response", opportunitiesResp);
   return (
@@ -25,7 +30,7 @@ async function OportunitiesChildPage() {
         route={ROUTES_EXECUTIVE.DESK_EXECUTIVE}
         routeTitle="Dashboard"
       />
-      <TableOpportunties settingsTable={settingsTable}  opportunitiesResp={opportunitiesResp}/>
+      <TableOpportunties session={session!}  settingsTable={settingsTable}  opportunitiesResp={opportunitiesResp}/>
     </div>
   );
 }

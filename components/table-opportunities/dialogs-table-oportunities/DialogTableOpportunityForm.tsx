@@ -44,18 +44,14 @@ import {
 } from "@/lib/validations";
 import { Opportunity } from "@/constants/column-config.constant";
 
-
-
 interface Props {
   opportunity: Opportunity;
   onClose: () => void;
 }
 
 function DialogTableOpportunityForm(props: Props) {
-
-
   const { opportunity, onClose } = props;
-  
+
   // const [open, setOpen] = useState(true);
 
   const form = useForm<DialogTableOpportunityFormSchema>({
@@ -63,13 +59,12 @@ function DialogTableOpportunityForm(props: Props) {
     defaultValues: {
       startDate: new Date(),
       endDate: new Date(),
-      amount: "", 
+      amount: "",
       description: "",
       files: [],
-      comments: [], 
+      comments: [],
     },
   });
-  
 
   function onSubmit(data: DialogTableOpportunityFormSchema) {
     console.log(data);
@@ -84,7 +79,7 @@ function DialogTableOpportunityForm(props: Props) {
   ];
 
   return (
-    <Dialog open={!!opportunity}  onOpenChange={onClose}>
+    <Dialog open={!!opportunity} onOpenChange={onClose}>
       <DialogContent className="w-full md:max-w-[1200px] max-h-[calc(100vh-100px)] overflow-y-auto p-10">
         <div className="flex flex-col md:flex-row h-full">
           <div className="md:flex-1 md:p-6">
@@ -130,7 +125,10 @@ function DialogTableOpportunityForm(props: Props) {
                                   )}
                                 >
                                   {field.value
-                                    ? format(new Date(field.value), "dd/MM/yyyy") 
+                                    ? format(
+                                        new Date(field.value),
+                                        "dd/MM/yyyy"
+                                      )
                                     : "Seleccione fecha inicio"}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
@@ -172,7 +170,10 @@ function DialogTableOpportunityForm(props: Props) {
                                   )}
                                 >
                                   {field.value
-                                    ? format(new Date(field.value), "dd/MM/yyyy") 
+                                    ? format(
+                                        new Date(field.value),
+                                        "dd/MM/yyyy"
+                                      )
                                     : "Seleccione fecha cierre"}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>

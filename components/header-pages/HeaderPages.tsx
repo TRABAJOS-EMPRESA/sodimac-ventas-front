@@ -6,12 +6,12 @@ import { ChevronLeft } from "lucide-react";
 import { auth } from "@/utils/auth";
 
 interface Props {
-  w: string;
-  titleHeader: string;
-  route: string;
-  routeTitle: string;
-  buttonLink: boolean;
-  buttonDrawer: boolean;
+  w?: string;
+  titleHeader?: string;
+  route?: string;
+  routeTitle?: string;
+  buttonLink?: boolean;
+  buttonDrawer?: boolean;
 }
 
 async function HeaderPages(props: Props) {
@@ -25,7 +25,7 @@ async function HeaderPages(props: Props) {
         {buttonLink && (
           <Button variant={"ghost"} className="hover:bg-transparent flex flex-col items-start p-0">
             <Link
-              href={route}
+              href={route!}
               className="border-2 flex border-primary-blue py-[6px] px-6 md:px-2 text-primary-blue rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
             >
               <ChevronLeft className="ease-in-out w-9 h-10" />
@@ -34,7 +34,7 @@ async function HeaderPages(props: Props) {
           </Button>
         )}
 
-        {buttonDrawer && <DrawerOpportunities w={w} session={session!} />}
+        {buttonDrawer && <DrawerOpportunities w={w!} session={session!} />}
       </div>
     </div>
   );

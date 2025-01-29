@@ -20,19 +20,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronUpIcon,
   Eye,
   FileDown,
+  Filter,
   FilterX,
   Loader2,
   Settings2,
-  X,
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
 import DialogTableOpportunityForm from "./dialogs-table-oportunities/DialogTableOpportunityForm";
 import {
@@ -42,25 +38,71 @@ import {
 } from "@/constants/column-config.constant";
 import { GetOpportunitiesByIDExecutive } from "@/interfaces/opportunities/get-opportunities-by-executiveId.interface";
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
-import { exportToPDF } from "@/utils/exportToPDF";
-import { Input } from "../ui/input";
 import { editSettingsTable } from "@/actions/settings-table/edit-settings-table.action";
 import { toast } from "@/hooks/use-toast";
+import DialogTableExportPdf from "./dialogs-table-oportunities/DialogTableExportPdf";
+import { Session } from "next-auth";
+
+import {
+  DateRangeFilter,
+  PopoverState,
+} from "./components/filters/DateRangeFilter";
+import { RangeFilter } from "./components/filters/RangeFilter";
+import { MultiSelectFilter } from "./components/filters/MultiSelectFilter";
+import MobileTableView from "./components/mobile/MobileTableView";
+import PaginationTable from "./components/paginacion/PaginationTable";
 
 interface Props {
   opportunitiesResp: GetOpportunitiesByIDExecutive[] | ErrorResp | [];
   settingsTable: ColumnConfig[] | ErrorResp;
+  session: Session;
+}
+
+interface FilterState {
+  estado: string[];
+  tipoProyecto: string[];
+  ingresos: {
+    min: number | null;
+    max: number | null;
+  };
+  fechaInicio: {
+    start: Date | null;
+    end: Date | null;
+  };
+  fechaCierre: {
+    start: Date | null;
+    end: Date | null;
+  };
+  oportunidadHija: string;
+  rut: string;
 }
 
 function TableOpportunities(props: Props) {
-  const { opportunitiesResp, settingsTable } = props;
+  const { opportunitiesResp, settingsTable, session } = props;
   const searchParams = useSearchParams();
   const stateFilter = searchParams.get("state");
 
-  // TODO como respondo un error o la config debo preguntar si es array
-  const [columns, setColumns] = useState<ColumnConfig[]>(
-    Array.isArray(settingsTable) ? settingsTable : []
-  );
+  const [columns, setColumns] = useState<ColumnConfig[]>(() => {
+    const desiredOrder = [
+      "estado",
+      "oportunidadPadre",
+      "oportunidadHija",
+      "tipoProyecto",
+      "nombreCliente",
+      "rut",
+      "ingresos",
+      "fechaInicio",
+      "fechaCierre",
+    ];
+
+    if (!Array.isArray(settingsTable)) {
+      return [];
+    }
+
+    return desiredOrder
+      .map((key) => settingsTable.find((col) => col.key === key))
+      .filter((col): col is ColumnConfig => col !== undefined);
+  });
   const initialColumnOrder = [...columnConfig];
   const [data, setData] = useState<Opportunity[]>([]);
   const [filteredData, setFilteredData] = useState<Opportunity[]>([]);
@@ -68,15 +110,164 @@ function TableOpportunities(props: Props) {
   const [loadingSaveConfig, setLoadingSaveConfig] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  const [activeFilter, setActiveFilter] = useState<keyof Opportunity | null>(
-    null
-  );
+  const [inputOppHija, setInputOppHija] = useState(false);
+  const [inputRut, setInputRut] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDialogConfigOpen, setIsDialogConfigOpen] = useState(false);
   const [selectedOpportunity, setSelectedOpportunity] =
     useState<Opportunity | null>(null);
   const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState(""); // Estado para el término de búsqueda
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isOpenPdfDialog, setOpenPdfDialog] = useState(false);
+  const [openPopover, setOpenPopover] = useState<PopoverState>({});
+
+  const [filterState, setFilterState] = useState<FilterState>({
+    estado: [],
+    tipoProyecto: [],
+    ingresos: { min: null, max: null },
+    fechaInicio: { start: null, end: null },
+    fechaCierre: { start: null, end: null },
+    oportunidadHija: "",
+    rut: "",
+  });
+
+  // Obtener valores únicos para los filtros de selección
+  const uniqueStates = useMemo(
+    () => Array.from(new Set(data.map((item) => item.estado))),
+    [data]
+  );
+
+  const uniqueProjectTypes = useMemo(
+    () => Array.from(new Set(data.map((item) => item.tipoProyecto))),
+    [data]
+  );
+
+  const handleMultiFilter = useCallback(() => {
+    let filteredResults = [...data];
+
+    // Filtro por estado
+    if (filterState.estado.length > 0) {
+      filteredResults = filteredResults.filter((item) =>
+        filterState.estado.includes(item.estado)
+      );
+    }
+
+    // FILTRO POR TIPO DE PROUECTO
+    if (filterState.tipoProyecto.length > 0) {
+      filteredResults = filteredResults.filter((item) =>
+        filterState.tipoProyecto.includes(item.tipoProyecto)
+      );
+    }
+
+    // ILTRO POR INGRESOS
+    if (
+      filterState.ingresos.min !== null ||
+      filterState.ingresos.max !== null
+    ) {
+      filteredResults = filteredResults.filter((item) => {
+        const value =
+          typeof item.ingresos === "string"
+            ? Number(
+                (item.ingresos as string).replace(/\./g, "").replace(",", ".")
+              )
+            : item.ingresos;
+
+        if (
+          filterState.ingresos.min !== null &&
+          filterState.ingresos.max !== null
+        ) {
+          return (
+            value >= filterState.ingresos.min &&
+            value <= filterState.ingresos.max
+          );
+        }
+        if (filterState.ingresos.min !== null) {
+          return value >= filterState.ingresos.min;
+        }
+        if (filterState.ingresos.max !== null) {
+          return value <= filterState.ingresos.max;
+        }
+        return true;
+      });
+    }
+
+    // FILTRO POR FECHA E INICIO
+    if (filterState.fechaInicio.start || filterState.fechaInicio.end) {
+      filteredResults = filteredResults.filter((item) => {
+        if (item.fechaInicio === "Sin fecha") return false;
+
+        // CONVERTIR LA FECHA A STRING
+        const [day, month, year] = item.fechaInicio.split("/").map(Number);
+        const itemDate = new Date(year, month - 1, day);
+        itemDate.setHours(0, 0, 0, 0); // Normalizar la hora
+
+        if (filterState.fechaInicio.start && filterState.fechaInicio.end) {
+          const start = new Date(filterState.fechaInicio.start);
+          const end = new Date(filterState.fechaInicio.end);
+          start.setHours(0, 0, 0, 0);
+          end.setHours(23, 59, 59, 999);
+          return itemDate >= start && itemDate <= end;
+        }
+        if (filterState.fechaInicio.start) {
+          const start = new Date(filterState.fechaInicio.start);
+          start.setHours(0, 0, 0, 0);
+          return itemDate >= start;
+        }
+        if (filterState.fechaInicio.end) {
+          const end = new Date(filterState.fechaInicio.end);
+          end.setHours(23, 59, 59, 999);
+          return itemDate <= end;
+        }
+        return true;
+      });
+    }
+    // FILTRO POR FECHA DE CIERRE
+    if (filterState.fechaCierre.start || filterState.fechaCierre.end) {
+      filteredResults = filteredResults.filter((item) => {
+        if (item.fechaCierre === "Sin fecha") return false;
+        const [day, month, year] = item.fechaCierre.split("/").map(Number);
+        const date = new Date(year, month - 1, day);
+
+        if (filterState.fechaCierre.start && filterState.fechaCierre.end) {
+          return (
+            date >= filterState.fechaCierre.start &&
+            date <= filterState.fechaCierre.end
+          );
+        }
+        if (filterState.fechaCierre.start) {
+          return date >= filterState.fechaCierre.start;
+        }
+        if (filterState.fechaCierre.end) {
+          return date <= filterState.fechaCierre.end;
+        }
+        return true;
+      });
+    }
+
+    // FILTRO POR OPORTUNIDAD HIJA
+    if (filterState.oportunidadHija.trim() !== "") {
+      filteredResults = filteredResults.filter((item) =>
+        item.oportunidadHija
+          .toLowerCase()
+          .includes(filterState.oportunidadHija.toLowerCase())
+      );
+    }
+
+    // FILTRO POR RUT
+    if (filterState.rut.trim() !== "") {
+      filteredResults = filteredResults.filter((item) =>
+        item.rut.toLowerCase().includes(filterState.rut.toLowerCase())
+      );
+    }
+
+    setFilteredData(filteredResults);
+    setCurrentPage(1);
+  }, [data, filterState]);
+
+  // USSEFFETCT PARA MANEJAR LO FILTROS
+  useEffect(() => {
+    handleMultiFilter();
+  }, [filterState, handleMultiFilter]);
 
   useEffect(() => {
     const mapData = async () => {
@@ -162,8 +353,6 @@ function TableOpportunities(props: Props) {
   };
 
   const clearFilter = () => {
-    setActiveFilter(null);
-
     const resetData = stateFilter
       ? data.filter((row) =>
           row.estado.toLowerCase().includes(stateFilter.toLowerCase())
@@ -182,6 +371,16 @@ function TableOpportunities(props: Props) {
         col.key === key ? { ...col, visible: !col.visible } : col
       )
     );
+  };
+
+  const handleOpenPdfDialog = () => {
+    console.log("ejtro a pdf");
+
+    setOpenPdfDialog(true);
+  };
+
+  const handleClosePdfDialog = () => {
+    setOpenPdfDialog(false);
   };
 
   const handleOpenDialog = (
@@ -251,7 +450,7 @@ function TableOpportunities(props: Props) {
   };
   return (
     <div>
-      {/* Vista de Escritorio */}
+      {/* VISTA ESCRITORIO */}
       <div className="hidden md:block">
         <div className="min-w-[1200px] max-w-[1200px]">
           <div className="w-full flex items-center gap-2 bg-gray-100 py-4 pl-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
@@ -262,7 +461,6 @@ function TableOpportunities(props: Props) {
               <FilterX className="mr-2 h-4 w-4" />
               Reestablecer Tabla
             </Button>
-
             <Dialog
               open={isDialogConfigOpen}
               onOpenChange={setIsDialogConfigOpen}
@@ -291,15 +489,25 @@ function TableOpportunities(props: Props) {
                       <Switch
                         checked={column.visible}
                         className="bg-blue-600"
+                        disabled={column.key === "oportunidadHija"}
                         onCheckedChange={() => toggleColumn(column.key)}
                       />
                     </div>
                   ))}
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2">
                   <Button
-                    className="w-1/3 border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+                    className="w-1/4 border-2 border-gray-600 bg-gray-600 rounded-full font-bold text-primary-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
+                    onClick={() => {
+                      clearFilter();
+                      setIsDialogConfigOpen(false);
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    className="w-1/4 border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
                     onClick={() => saveConfig()}
                   >
                     {loadingSaveConfig ? (
@@ -314,7 +522,7 @@ function TableOpportunities(props: Props) {
 
             <Button
               className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-              onClick={() => exportToPDF(paginatedFilteredData, columns)}
+              onClick={() => handleOpenPdfDialog()}
             >
               <FileDown className="mr-2 h-4 w-4" />
               Exportar como PDF
@@ -334,29 +542,188 @@ function TableOpportunities(props: Props) {
                         onDragOver={handleDragOver}
                         onDrop={(e) => handleDrop(e, index)}
                       >
-                        <div className="flex items-center fade-in">
-                          {activeFilter === column.key ? (
-                            <div className="flex items-center gap-2">
-                              <input
-                                type="text"
-                                className="border rounded px-2 py-1 text-sm"
-                                placeholder={`Filtrar por ${column.label}`}
-                                onChange={(e) =>
-                                  handleFilterChange(column.key, e.target.value)
-                                }
-                              />
-                              <X
-                                className="cursor-pointer text-red-500"
-                                onClick={clearFilter}
-                              />
-                            </div>
-                          ) : (
-                            <span
-                              className="cursor-pointer font-bold"
-                              onClick={() => setActiveFilter(column.key)}
-                            >
-                              {column.label}
-                            </span>
+                        <div className="flex items-center justify-between fade-in">
+                          <span className="font-bold text-[12px]">
+                            {column.label === "Oportunidad Hija"
+                              ? column.label === "Oportunidad Hija" &&
+                                inputOppHija
+                                ? ""
+                                : column.label
+                              : column.label === "RUT"
+                              ? column.label === "RUT" && inputRut
+                                ? ""
+                                : column.label
+                              : column.label}
+                          </span>
+
+                          {/* MULTISELECT COMPONENTE FILTER TIPO DE PROYECTO */}
+
+                          {column.key === "estado" && (
+                            <MultiSelectFilter
+                              column={column.key}
+                              options={uniqueStates}
+                              values={filterState.estado}
+                              onChange={(values) => {
+                                setFilterState((prev) => ({
+                                  ...prev,
+                                  estado: values,
+                                }));
+                              }}
+                              openPopover={openPopover}
+                              setOpenPopover={setOpenPopover}
+                            />
+                          )}
+                          {/* MULTISELECT COMPONENTE FILTER TIPO DE PROYECTO */}
+                          {column.key === "tipoProyecto" && (
+                            <MultiSelectFilter
+                              column={column.key}
+                              options={uniqueProjectTypes}
+                              values={filterState.tipoProyecto}
+                              onChange={(values) => {
+                                setFilterState((prev) => ({
+                                  ...prev,
+                                  tipoProyecto: values,
+                                }));
+                              }}
+                              openPopover={openPopover}
+                              setOpenPopover={setOpenPopover}
+                            />
+                          )}
+
+                          {/* FILTRO DE INGRESOS RANGE FILTER */}
+
+                          {column.key === "ingresos" && (
+                            <RangeFilter
+                              column={column.key}
+                              min={filterState.ingresos.min}
+                              max={filterState.ingresos.max}
+                              openPopover={openPopover}
+                              setOpenPopover={setOpenPopover}
+                              onChange={(min, max) => {
+                                setFilterState((prev) => ({
+                                  ...prev,
+                                  ingresos: { min, max },
+                                }));
+                                handleMultiFilter();
+                              }}
+                            />
+                          )}
+
+                          {/* FECHA DE INICIO COMPONENTE DATERANGE FILTER */}
+                          {column.key === "fechaInicio" && (
+                            <DateRangeFilter
+                              column={column.key}
+                              startDate={filterState.fechaInicio.start}
+                              endDate={filterState.fechaInicio.end}
+                              onChange={(start, end) => {
+                                setFilterState((prev) => ({
+                                  ...prev,
+                                  fechaInicio: { start, end },
+                                }));
+                              }}
+                              title="Fecha de Inicio"
+                              openPopover={openPopover}
+                              setOpenPopover={setOpenPopover}
+                            />
+                          )}
+
+                          {/* FILTRO POR NOMBRE DE OPP HIJA */}
+                          {column.key === "oportunidadHija" &&
+                            (inputOppHija ? (
+                              <div className="relative flex items-center gap-2 justify-center">
+                                <input
+                                  type="text"
+                                  className="border rounded px-2 py-1 text-sm pr-8 w-[143px] fade-in"
+                                  placeholder="Op. Hija"
+                                  value={filterState.oportunidadHija}
+                                  onChange={(e) =>
+                                    setFilterState((prev) => ({
+                                      ...prev,
+                                      oportunidadHija: e.target.value,
+                                    }))
+                                  }
+                                />
+
+                                <button
+                                  className="absolute right-2 text-gray-500 hover:text-gray-800"
+                                  onClick={() => {
+                                    setFilterState((prev) => ({
+                                      ...prev,
+                                      oportunidadHija: "",
+                                    }));
+                                    setInputOppHija(false);
+                                  }}
+                                >
+                                  X
+                                </button>
+                              </div>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setInputOppHija(true)}
+                              >
+                                <Filter className={"text-muted-foreground"} />
+                              </Button>
+                            ))}
+
+                          {/* FILTRO POR RUT */}
+                          {column.key === "rut" &&
+                            (inputRut ? (
+                              <div className="relative flex items-center gap-2">
+                                <input
+                                  type="text"
+                                  className="border rounded px-2 py-1 text-sm pr-8 ml-2 w-[100px] fade-in"
+                                  placeholder="Buscar RUT"
+                                  value={filterState.rut}
+                                  onChange={(e) =>
+                                    setFilterState((prev) => ({
+                                      ...prev,
+                                      rut: e.target.value,
+                                    }))
+                                  }
+                                />
+                                <button
+                                  className="absolute right-2 text-gray-500 hover:text-gray-800"
+                                  onClick={() => {
+                                    setFilterState((prev) => ({
+                                      ...prev,
+                                      rut: "",
+                                    }));
+                                    setInputRut(false);
+                                  }}
+                                >
+                                  X
+                                </button>
+                              </div>
+                            ) : (
+                              // ícono de filtro, botón, etc.
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setInputRut(true)}
+                              >
+                                <Filter className="text-muted-foreground" />
+                              </Button>
+                            ))}
+
+                          {/* FECHA DE CIERRE COMPONENTE DATERANGE FILTER */}
+
+                          {column.key === "fechaCierre" && (
+                            <DateRangeFilter
+                              column={column.key}
+                              startDate={filterState.fechaCierre.start}
+                              endDate={filterState.fechaCierre.end}
+                              onChange={(start, end) => {
+                                setFilterState((prev) => ({
+                                  ...prev,
+                                  fechaCierre: { start, end },
+                                }));
+                              }}
+                              title="Fecha de Cierre"
+                              openPopover={openPopover}
+                              setOpenPopover={setOpenPopover}
+                            />
                           )}
                         </div>
                       </TableHead>
@@ -418,26 +785,14 @@ function TableOpportunities(props: Props) {
             </Table>
           </div>
 
+          {/* PAGINACION */}
+
           {filteredData.length > 0 && (
-            <div className="flex justify-between items-center py-4">
-              <Button
-                disabled={currentPage === 1}
-                className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-                onClick={() => handlePageChange(currentPage - 1)}
-              >
-                <ChevronLeftIcon /> Anterior
-              </Button>
-              <span>
-                Página {currentPage} de {totalPages}
-              </span>
-              <Button
-                disabled={currentPage === totalPages}
-                className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Siguiente <ChevronRightIcon />
-              </Button>
-            </div>
+            <PaginationTable
+              currentPage={currentPage}
+              totalPages={totalPages}
+              handlePageChange={handlePageChange}
+            />
           )}
 
           {isDialogOpen && selectedOpportunity && (
@@ -452,139 +807,40 @@ function TableOpportunities(props: Props) {
       {/* Vista Móvil */}
       <div className="block md:hidden">
         <div className="w-full p-2">
-          <div className="w-full flex flex-wrap justify-center gap-2 bg-gray-100 py-4 px-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
-            {/* Input de búsqueda version mobil */}
-            <Input
-              type="text"
-              placeholder="Buscar..."
-              className="w-full p-2 border-[1px] border-primary-blue rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                handleFilterChange("oportunidadPadre", e.target.value); // Reutilizamos handleFilterChange
-              }}
-            />
-
-            <Button
-              className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-              onClick={clearFilter}
-            >
-              <FilterX className="mr-2 h-4 w-4" />
-              Reestablecer
-            </Button>
-
-            <Button
-              className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-              onClick={() => exportToPDF(paginatedFilteredData, columns)}
-            >
-              <FileDown className="mr-2 h-4 w-4" />
-              Exportar PDF
-            </Button>
-          </div>
-
-          <div className="space-y-2 p-2">
-            {loading
-              ? Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="p-4 bg-white shadow rounded-lg">
-                    <Skeleton className="h-6 w-full rounded bg-gray-200 animate-pulse" />
-                  </div>
-                ))
-              : paginatedFilteredData.map((row) => (
-                  <div
-                    key={row.id}
-                    className="p-4 bg-white shadow rounded-lg"
-                    onClick={() => handleCardClick(row.id)}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-bold">{row.oportunidadPadre}</p>
-                        <p>{row.nombreCliente}</p>
-                      </div>
-                      <Badge
-                        className={
-                          {
-                            inicio: "bg-orange-500 text-white",
-                            "POR VENCER": "bg-red-500 text-white",
-                            cotizada: "bg-blue-500 text-white",
-                            TERMINADA: "bg-green-500 text-white",
-                          }[row.estado] || "bg-gray-300 text-black"
-                        }
-                      >
-                        {row.estado}
-                      </Badge>
-                    </div>
-                    {expandedCardId === row.id && (
-                      <div className="mt-4 space-y-2 fade-in">
-                        <p>
-                          <strong>Oportunidad Hija:</strong>{" "}
-                          {row.oportunidadHija}
-                        </p>
-                        <p>
-                          <strong>Tipo de Proyecto:</strong> {row.tipoProyecto}
-                        </p>
-                        <p>
-                          <strong>RUT:</strong> {row.rut}
-                        </p>
-                        <p>
-                          <strong>Ingresos:</strong> $
-                          {row.ingresos.toLocaleString()}
-                        </p>
-                        <p>
-                          <strong>Fecha Inicio:</strong> {row.fechaInicio}
-                        </p>
-                        <p>
-                          <strong>Fecha Cierre:</strong> {row.fechaCierre}
-                        </p>
-                        <Button
-                          className="mt-2 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-                          onClick={() => handleOpenDialog(row)}
-                        >
-                          <Eye className="h-4 w-4 text-blue-500" />
-                          Ver Detalles
-                        </Button>
-                      </div>
-                    )}
-
-                    <div className="flex justify-center items-center mt-2">
-                      {expandedCardId === row.id ? (
-                        <ChevronUpIcon className="h-5 w-5 text-gray-600" />
-                      ) : (
-                        <ChevronDownIcon className="h-5 w-5 text-gray-600" />
-                      )}
-                    </div>
-                  </div>
-                ))}
-          </div>
-
-          {filteredData.length > 0 && (
-            <div className="flex justify-between items-center py-4 px-2">
-              <Button
-                disabled={currentPage === 1}
-                className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-                onClick={() => handlePageChange(currentPage - 1)}
-                tabIndex={0}
-              >
-                <ChevronLeftIcon /> Anterior
-              </Button>
-              <span>
-                <span className="block sm:hidden">Página</span> {currentPage} de{" "}
-                {totalPages}
-              </span>
-              <Button
-                disabled={currentPage === totalPages}
-                tabIndex={0}
-                className="text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-                onClick={() => handlePageChange(currentPage + 1)}
-              >
-                Siguiente <ChevronRightIcon />
-              </Button>
-            </div>
-          )}
+          <MobileTableView
+            loading={loading}
+            paginatedFilteredData={paginatedFilteredData}
+            expandedCardId={expandedCardId}
+            handleCardClick={handleCardClick}
+            handleOpenDialog={handleOpenDialog}
+            handleOpenPdfDialog={handleOpenPdfDialog}
+            clearFilter={clearFilter}
+            handleFilterChange={handleFilterChange}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            handlePageChange={handlePageChange}
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            filteredData={filteredData}
+          />
 
           {isDialogOpen && selectedOpportunity && (
             <DialogTableOpportunityForm
               opportunity={selectedOpportunity!}
               onClose={handleCloseDialog}
+            />
+          )}
+
+          {isOpenPdfDialog && (
+            <DialogTableExportPdf
+              opportunitiesResp={
+                Array.isArray(opportunitiesResp) ? opportunitiesResp : []
+              }
+              nameExecutive={session.user?.name || ""}
+              currentPage={currentPage}
+              paginatedFilteredData={paginatedFilteredData}
+              columns={columns}
+              onClose={handleClosePdfDialog}
             />
           )}
         </div>

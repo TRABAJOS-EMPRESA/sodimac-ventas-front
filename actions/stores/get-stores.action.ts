@@ -3,29 +3,36 @@
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
 import { GetStoresResp } from "@/interfaces/stores/store.interface";
 import { auth } from "@/utils/auth";
+import { refreshTokenServer } from "../refresh-token/refresh-token.action";
+import { updateSessionTokens } from "../update-session/update-session.action";
 
 export async function getStores(): Promise<GetStoresResp[] | ErrorResp | []> {
   const endpoint = `${process.env.BACKEND_URL}/stores`;
-  const apikey = process.env.API_KEY as string;
   const session = await auth();
   console.log("endpoint", endpoint);
-  console.log("apikey", apikey);
-  if (!apikey) {
-    const error: ErrorResp = {
-      message: "API key no está configurada",
-      error: "ConfigError",
-      statusCode: 400,
-    };
-    return error;
-  }
+
   try {
-    const response = await fetch(endpoint, {
+    let response = await fetch(endpoint, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session?.user.accessTokenBack}`,
+        Authorization: `Bearer ${session?.user.accessTokenBack}`,
       },
     });
+
+    if (response.status === 401 && session) {
+      const newTokens = await refreshTokenServer(
+        session.user.refreshTokenBack!
+      );
+
+      await updateSessionTokens(newTokens.accessToken, newTokens.refreshToken);
+
+      response = await fetch(`${process.env.BACKEND_URL}/api/stores`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session?.user.accessTokenBack}`,
+        },
+      });
+    }
     if (response.ok) {
       const data: GetStoresResp[] = await response.json();
 

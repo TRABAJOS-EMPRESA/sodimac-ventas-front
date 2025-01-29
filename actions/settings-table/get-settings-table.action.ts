@@ -5,6 +5,8 @@ import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
 import { GetSettingsTable } from "@/interfaces/table-settings/get-settings-table.interface";
 
 import { auth } from "@/utils/auth";
+import { refreshTokenServer } from "../refresh-token/refresh-token.action";
+import { updateSessionTokens } from "../update-session/update-session.action";
 
 export interface PaginationGetOpportunitiesByIdExecutive {
   page: number;
@@ -24,20 +26,35 @@ export async function getSettingsTable(): Promise<ColumnConfig[] | ErrorResp> {
   const endpoint = `${process.env.BACKEND_URL}/settings/executive/table/opportunity/get/${session?.user.id}`;
   // console.log("endpoint", endpoint);
   // console.log("apikey", apikey);
-  
+
   try {
-    const response = await fetch(endpoint, {
+    let response = await fetch(endpoint, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session?.user.accessTokenBack}`,
+        Authorization: `Bearer ${session?.user.accessTokenBack}`,
       },
-      next: {tags: ['get-config-table']}
+      next: { tags: ["get-config-table"] },
     });
+
+    if (response.status === 401 && session) {
+      const newTokens = await refreshTokenServer(
+        session.user.refreshTokenBack!
+      );
+
+      await updateSessionTokens(newTokens.accessToken, newTokens.refreshToken);
+
+      response = await fetch(endpoint, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session?.user.accessTokenBack}`,
+        },
+      });
+    }
+
     if (response.ok) {
       const data: GetSettingsTable = await response.json();
       console.log("settings", data.settings);
-      
+
       return data.settings;
     } else {
       const errorData: ErrorResp = await response.json();

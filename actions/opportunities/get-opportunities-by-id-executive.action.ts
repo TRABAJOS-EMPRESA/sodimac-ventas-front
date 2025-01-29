@@ -4,6 +4,8 @@ import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
 import { GetOpportunitiesByIDExecutive } from "@/interfaces/opportunities/get-opportunities-by-executiveId.interface";
 
 import { auth } from "@/utils/auth";
+import { refreshTokenServer } from "../refresh-token/refresh-token.action";
+import { updateSessionTokens } from "../update-session/update-session.action";
 
 export interface PaginationGetOpportunitiesByIdExecutive {
   page: number;
@@ -28,14 +30,29 @@ export async function getOpportunitiesByIdExecutive(
   // console.log("apikey", apikey);
 
   try {
-    const response = await fetch(endpoint, {
+    let response = await fetch(endpoint, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${session?.user.accessTokenBack}`,
       },
       next: { tags: ["opportunities"] },
     });
+
+    if (response.status === 401 && session) {
+      const newTokens = await refreshTokenServer(
+        session.user.refreshTokenBack!
+      );
+
+      await updateSessionTokens(newTokens.accessToken, newTokens.refreshToken);
+
+      response = await fetch(endpoint, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${session?.user.accessTokenBack}`,
+        },
+      });
+    }
+
     if (response.ok) {
       const data: GetOpportunitiesByIDExecutive[] = await response.json();
 

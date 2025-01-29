@@ -5,6 +5,8 @@ import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
 import { GetSettingsTable } from "@/interfaces/table-settings/get-settings-table.interface";
 import { auth } from "@/utils/auth";
 import { revalidateTag } from "next/cache";
+import { refreshTokenServer } from "../refresh-token/refresh-token.action";
+import { updateSessionTokens } from "../update-session/update-session.action";
 
 export async function editSettingsTable(
   settings: ColumnConfig[]
@@ -32,14 +34,33 @@ export async function editSettingsTable(
   const endpoint = `${process.env.BACKEND_URL}/settings/executive/table/opportunity/edit`;
 
   try {
-    const response = await fetch(endpoint, {
+    let response = await fetch(endpoint, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${session.user.accessTokenBack}`,
       },
-      body: JSON.stringify({ userId: session.user.id, settings: objectSettingsTableEdit }),
+      body: JSON.stringify({
+        userId: session.user.id,
+        settings: objectSettingsTableEdit,
+      }),
     });
+
+    if (response.status === 401 && session) {
+      const newTokens = await refreshTokenServer(
+        session.user.refreshTokenBack!
+      );
+
+      await updateSessionTokens(newTokens.accessToken, newTokens.refreshToken);
+
+      response = await fetch(endpoint, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.user.accessTokenBack}`,
+        },
+      });
+    }
 
     if (response.ok) {
       const data: GetSettingsTable = await response.json();

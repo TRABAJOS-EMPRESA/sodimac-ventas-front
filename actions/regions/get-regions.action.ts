@@ -3,29 +3,38 @@
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
 import { GetRegionsResp } from "@/interfaces/regions/regions.interface";
 import { auth } from "@/utils/auth";
+import { refreshTokenServer } from "../refresh-token/refresh-token.action";
+import { updateSessionTokens } from "../update-session/update-session.action";
 
 export async function getRegions(): Promise<GetRegionsResp[] | ErrorResp | []> {
   const endpoint = `${process.env.BACKEND_URL}/regions`;
-  const apikey = process.env.API_KEY as string;
   const session = await auth()
   console.log("endpoint", endpoint);
-  console.log("apikey", apikey);
-  if (!apikey) {
-    const error: ErrorResp = {
-      message: "API key no está configurada",
-      error: "ConfigError",
-      statusCode: 400,
-    };
-    return error;
-  }
+
   try {
-    const response = await fetch(endpoint, {
+    let response = await fetch(endpoint, {
       method: "GET",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${session?.user.accessTokenBack}`,
+        Authorization: `Bearer ${session?.user.accessTokenBack}`,
       },
     });
+
+     if (response.status === 401 && session) {
+          const newTokens = await refreshTokenServer(
+            session.user.refreshTokenBack!
+          );
+    
+          await updateSessionTokens(newTokens.accessToken, newTokens.refreshToken);
+    
+          response = await fetch(endpoint, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${session?.user.accessTokenBack}`,
+            },
+          });
+        }
+
+    
     if (response.ok) {
       const data: GetRegionsResp[] = await response.json();
       return data;

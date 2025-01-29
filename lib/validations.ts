@@ -1,17 +1,15 @@
 import { z } from "zod";
 
 export const SignInSchema = z.object({
-    email: z.string()
-        .min(1,{message: "El email es requerido"})
-        .email({ message: "Email inválido" }),
+  email: z
+    .string()
+    .min(1, { message: "El email es requerido" })
+    .email({ message: "Email inválido" }),
 
-    password: z.string()
-        .min(1,{message: "La contraseña es requerida"})
-        // .max(100,{message: "La contraseña no puede tener más de 50 caracteres"})
-        // .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, { message: "La contraseña debe tener al menos una mayúscula, una minúscula y un número" })
-    
-})
-
+  password: z.string().min(1, { message: "La contraseña es requerida" }),
+  // .max(100,{message: "La contraseña no puede tener más de 50 caracteres"})
+  // .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/, { message: "La contraseña debe tener al menos una mayúscula, una minúscula y un número" })
+});
 
 export const opportunitySchema = z.object({
   // Client and location identification
@@ -64,34 +62,40 @@ export const opportunitySchema = z.object({
   description: z.string().max(300, {
     message: "La descripción no puede exceder los 300 caracteres.",
   }),
-})
+});
 
-export type OpportunityFormValues = z.infer<typeof opportunitySchema>
-
-
-
+export type OpportunityFormValues = z.infer<typeof opportunitySchema>;
 
 export const dialogTableOpportunityFormSchema = z.object({
   startDate: z.date({
     required_error: "La fecha de inicio es requerida",
   }),
-  endDate: z.date( {
+  endDate: z.date({
     required_error: "La fecha de cierre es requerida",
   }),
   amount: z.string().min(1, "El monto es requerido"),
-  description: z.string().max(300, "La descripción no puede exceder 300 caracteres"),
-  files: z.array(z.object({
-    name: z.string(),
-    size: z.number(),
-    url: z.string(),
-  })).optional(),
-  comments: z.array(z.object({
-    text: z.string(),
-    date: z.date(),
-  })).optional(),
-})
+  description: z
+    .string()
+    .max(300, "La descripción no puede exceder 300 caracteres"),
+  files: z
+    .array(
+      z.object({
+        name: z.string(),
+        size: z.number(),
+        url: z.string(),
+      })
+    )
+    .optional(),
+  comments: z
+    .array(
+      z.object({
+        text: z.string(),
+        date: z.date(),
+      })
+    )
+    .optional(),
+});
 
-export type DialogTableOpportunityFormSchema = z.infer<typeof dialogTableOpportunityFormSchema>
-
-
-
+export type DialogTableOpportunityFormSchema = z.infer<
+  typeof dialogTableOpportunityFormSchema
+>;
