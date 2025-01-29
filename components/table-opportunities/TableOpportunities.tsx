@@ -353,6 +353,7 @@ function TableOpportunities(props: Props) {
   };
 
   const clearFilter = () => {
+    // Reseteo la data filtrada
     const resetData = stateFilter
       ? data.filter((row) =>
           row.estado.toLowerCase().includes(stateFilter.toLowerCase())
@@ -362,9 +363,38 @@ function TableOpportunities(props: Props) {
     setFilteredData(resetData);
     setCurrentPage(1);
 
+    // Reseteo la cantidad de coliumnas y las vuelvo a la original
     setColumns(initialColumnOrder.map((col) => ({ ...col })));
-  };
 
+    // Reseteo los filtros de los estados
+    setFilterState({
+      estado: [],
+      tipoProyecto: [],
+      ingresos: { min: null, max: null },
+      fechaInicio: { start: null, end: null },
+      fechaCierre: { start: null, end: null },
+      oportunidadHija: "",
+      rut: "",
+    });
+
+    // Reseteo los booleanos de hijas y rut
+    setInputOppHija(false);
+    setInputRut(false);
+
+    // Pongo en string vacio el termino de  bsqueda
+    setSearchTerm("");
+
+    // Pongo en falso todos los popover para evitar la renderización de los filtros
+    setOpenPopover({
+      estado: false,
+      tipoProyecto: false,
+      ingresos: false,
+      fechaInicio: false,
+      fechaCierre: false,
+      oportunidadHija: false,
+      rut: false,
+    });
+  };
   const toggleColumn = (key: keyof Opportunity) => {
     setColumns(
       columns.map((col) =>
@@ -556,7 +586,7 @@ function TableOpportunities(props: Props) {
                               : column.label}
                           </span>
 
-                          {/* MULTISELECT COMPONENTE FILTER TIPO DE PROYECTO */}
+                          {/* MULTISELECT COMPONENTE FILTER ESTADO  */}
 
                           {column.key === "estado" && (
                             <MultiSelectFilter
