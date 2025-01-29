@@ -23,6 +23,7 @@ function LeftSideBar(props: Props) {
       />
       {leftSideMenu.map((item, index) => (
         <Link
+        tabIndex={0}
           key={index}
           href={item.href}
           className="flex items-center justify-center w-full text-center rounded-lg

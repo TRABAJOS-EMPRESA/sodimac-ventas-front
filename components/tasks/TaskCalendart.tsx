@@ -13,17 +13,12 @@ import esLocale from "@fullcalendar/core/locales/es";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+
 import ROUTES_EXECUTIVE from "@/constants/routes";
 import { useRouter } from "next/navigation";
+import { CoverageFormDialog } from "../forms/tasks/CoverageFormDialog";
+import { EventDropArg } from "@fullcalendar/core/index.js";
+import { toast } from "@/hooks/use-toast";
 
 type TaskType =
   | "cobertura"
@@ -41,10 +36,6 @@ interface Task {
   documentId: string;
   type: TaskType;
   color?: string;
-}
-
-interface NewTask extends Partial<Task> {
-  type: Task["type"];
 }
 
 // ICONO SEGUN TIPO
@@ -107,10 +98,38 @@ function TaskCard({ task }: { task: Task }) {
   );
 }
 
+// AUXILIAR OARA VER SI LAS FECHAS ESTAN DENTRO DEL MSS
+
+const isInCurrentMonth = (dateStr: string): boolean => {
+  console.log("incurrent month auxiliar fecha del arrastre-> ", dateStr);
+
+  if (!dateStr) return false;
+
+  // DIVIDO LA FECHA EN DISTINTOS COMPONENTES
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  const now = new Date();
+
+  const currentDate = new Date(now.getFullYear(), now.getMonth());
+  const targetDate = new Date(date.getFullYear(), date.getMonth());
+
+  // console.log("Fecha actual:", currentDate);
+  // console.log("Fecha objetivo:", targetDate);
+  console.log("Son iguales:", currentDate.getTime() === targetDate.getTime());
+
+  return currentDate.getTime() === targetDate.getTime();
+};
+
 export default function TaskCalendar() {
+  interface CoverageDialogProps {
+    open: boolean;
+    id?: string;
+  }
+
   const router = useRouter();
   const unplannedContainerRef = useRef<HTMLDivElement | null>(null);
-
+  const [coverageDialogForm, setCoverageDialogForm] =
+    useState<CoverageDialogProps>({ open: false, id: "" });
   // DEFINI LAS PLANIFICADAS O NO BAJO UN CAMPO PLANNED TRUE O FALSE
   // ASI MUESTRO EN EL CALENDARIO LAS PLANIFICADAS Y EN LA LISTA LAS NO PLANIFICADAS
   const [tasks, setTasks] = useState<Task[]>([
@@ -138,7 +157,7 @@ export default function TaskCalendar() {
       id: "3",
       planned: false,
       title: "Cotización - Cliente 3",
-      start: "",
+      start: "2024-01-16",
       client: "Nombre cliente",
       documentId: "11.111.111-1",
       type: "cotizacion",
@@ -148,21 +167,31 @@ export default function TaskCalendar() {
       id: "4",
       planned: false,
       title: "Seguimiento Cotización - Cliente 4",
-      start: "",
+      start: "2024-01-17",
       client: "Nombre cliente",
       documentId: "11.111.111-1",
       type: "seguimiento-cotizacion",
       color: "#8B5CF6",
     },
+    {
+      id: "5",
+      planned: false,
+      title: "Cobertura - Cliente 5",
+      start: "2024-01-08",
+      client: "Nombre cliente",
+      documentId: "11.111.111-1",
+      type: "cobertura",
+      color: "#3b82f6",
+    },
   ]);
 
-  // Datos temporales para crear nueva tarea
-  const [newTask, setNewTask] = useState<NewTask>({
-    title: "",
-    client: "",
-    documentId: "",
-    type: "cobertura",
-  });
+  // // Datos temporales para crear nueva tarea
+  // const [newTask, setNewTask] = useState<NewTask>({
+  //   title: "",
+  //   client: "",
+  //   documentId: "",
+  //   type: "cobertura",
+  // });
 
   // inicio de draggable en el contenedor de tareas sin planificar
   useEffect(() => {
@@ -181,66 +210,88 @@ export default function TaskCalendar() {
   const plannedTasks = tasks.filter((t) => t.planned);
   const unplannedTasks = tasks.filter((t) => !t.planned);
 
-  const handleAddTask = () => {
-    if (!newTask.title) return;
+  // const handleAddTask = () => {
+  //   if (!newTask.title) return;
 
-    const isPlanned = Boolean(newTask.start);
-    const newId = Date.now().toString();
+  //   const isPlanned = Boolean(newTask.start);
+  //   const newId = Date.now().toString();
 
-    const finalTask: Task = {
-      id: newId,
-      planned: isPlanned,
-      title: newTask.title,
-      start: newTask.start || "",
-      client: newTask.client || "",
-      documentId: newTask.documentId || "",
-      type: newTask.type || "cobertura",
-      color:
-        newTask.type === "cobertura"
-          ? "#3b82f6"
-          : newTask.type === "linea-credito"
-          ? "#14b8a6"
-          : newTask.type === "cotizacion"
-          ? "#f59e0b"
-          : "#8b5cf6",
-    };
+  //   const finalTask: Task = {
+  //     id: newId,
+  //     planned: isPlanned,
+  //     title: newTask.title,
+  //     start: newTask.start || "",
+  //     client: newTask.client || "",
+  //     documentId: newTask.documentId || "",
+  //     type: newTask.type || "cobertura",
+  //     color:
+  //       newTask.type === "cobertura"
+  //         ? "#3b82f6"
+  //         : newTask.type === "linea-credito"
+  //         ? "#14b8a6"
+  //         : newTask.type === "cotizacion"
+  //         ? "#f59e0b"
+  //         : "#8b5cf6",
+  //   };
 
-    setTasks((prev) => [...prev, finalTask]);
-    setNewTask({ title: "", client: "", documentId: "", type: "cobertura" });
-  };
+  //   setTasks((prev) => [...prev, finalTask]);
+  //   setNewTask({ title: "", client: "", documentId: "", type: "cobertura" });
+  // };
 
-  // arrastrar para cambiar de estado y fecha
+  // ARRASTRO Y OBTENGO LA DATA
   const handleEventReceive = (info: EventReceiveArg) => {
     const dataStr = info.draggedEl.getAttribute("data-event");
+
+    console.log("dataStr", dataStr);
+
     if (!dataStr) return;
 
     const droppedTask = JSON.parse(dataStr) as Task;
+    const targetDate = info.event.startStr;
 
-    // Pasamos esa tarea a planned=true, con la fecha
+    // AQUI HAGO LA VALIDACION DEL MES
+    if (!isInCurrentMonth(targetDate)) {
+      // SI NO REVIERTO LA ACCION DEL DRAG AN DROP
+      info.revert();
+      toast({
+        variant: "destructive",
+        title: "Error al planificar",
+        description: "Solo se pueden planificar tareas para el mes actual",
+      });
+      return;
+    }
+
+    // Y SI LA FECHA ES VALIDA ENVIAR EL EVENTO
     setTasks((prev) =>
       prev.map((t) =>
-        t.id === droppedTask.id
-          ? { ...t, planned: true, start: info.event.startStr }
-          : t
+        t.id === droppedTask.id ? { ...t, planned: true, start: targetDate } : t
       )
     );
 
-    // propiedades que se veran de la tarea en el calendario
     info.event.setProp("title", droppedTask.title);
     info.event.setProp("id", droppedTask.id);
     info.event.setProp("color", droppedTask.color);
   };
 
-  // arrastrar y cambiar el estado hablar con Jean para cmapo planned
   const handleEventDragStop = (info: EventDragStopArg) => {
     if (isOverUnplannedContainer(info.jsEvent)) {
-      console.log("Se arrastró el evento al contenedor sin planificar");
+      const eventId = info.event.id;
+
+      // AQUI GUARDO LA FECHA ANTES DE GUARADAR EL OBJETO
+      const currentDate = info.event.startStr;
+
       info.event.remove();
 
-      const eventId = info.event.id;
+      // LE PASO LA FECHA  A LA TAREA ENCONTRADA
       setTasks((prev) =>
         prev.map((t) =>
-          t.id === eventId ? { ...t, planned: false, start: "" } : t
+          t.id === eventId
+            ? {
+                ...t,
+                planned: false,
+                start: currentDate,
+              }
+            : t
         )
       );
     }
@@ -257,6 +308,30 @@ export default function TaskCalendar() {
     );
   };
 
+  const handleCloseCoverageFormDialog = () => {
+    setCoverageDialogForm({ open: false });
+  };
+
+  const handleEventDrop = (info: EventDropArg) => {
+    const newDate = info.event.startStr;
+
+    // Validar si la fecha de la tarea es del mes actual
+    if (!isInCurrentMonth(newDate)) {
+      info.revert();
+      toast({
+        variant: "destructive",
+        title: "Error al planificar",
+        description: "Solo se pueden planificar tareas para el mes actual",
+      });
+      return;
+    }
+
+    // Actualizar la fecha de la tarea cuando se mueve dentro del calendario
+    const eventId = info.event.id;
+    setTasks((prev) =>
+      prev.map((t) => (t.id === eventId ? { ...t, start: newDate } : t))
+    );
+  };
   return (
     <div className="min-h-screen bg-background">
       <div className="pl-16">
@@ -269,7 +344,6 @@ export default function TaskCalendar() {
             Volver a Dashboard
           </Button>
         </header>
-
         <div className="flex gap-4 p-4">
           {/* CALENDARIO */}
           <div className="flex-1">
@@ -285,13 +359,32 @@ export default function TaskCalendar() {
                 }}
                 editable={true}
                 droppable={true}
+                eventDrop={handleEventDrop}
                 eventReceive={handleEventReceive}
                 eventDragStop={handleEventDragStop}
                 events={plannedTasks}
                 height="auto"
+                // Añadir el manejador de eventos para clicks
+                eventClick={(info) => {
+                  // Verificar si el evento es de tipo cobertura
+
+                  console.log("click");
+
+                  const task = tasks.find((t) => t.id === info.event.id);
+                  if (task?.type === "cobertura") {
+                    setCoverageDialogForm({ open: true, id: task.id });
+                  }
+                }}
               />
             </div>
           </div>
+
+          {coverageDialogForm.open && (
+            <CoverageFormDialog
+              id={coverageDialogForm.id!}
+              onClose={handleCloseCoverageFormDialog}
+            />
+          )}
 
           {/* COLUMNA LATERAL DERECHA */}
           <div className="w-80">
@@ -317,89 +410,6 @@ export default function TaskCalendar() {
                 </ScrollArea>
               </CardContent>
             </Card>
-
-            {/* Modal: Crear nueva tarea consultar si el ejecutivo puede crear tareaas */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button className="w-full mt-4">Agregar nueva tarea</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Agregar nueva tarea</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  {/* Título */}
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="title" className="text-right">
-                      Título
-                    </Label>
-                    <Input
-                      id="title"
-                      value={newTask.title}
-                      onChange={(e) =>
-                        setNewTask({ ...newTask, title: e.target.value })
-                      }
-                      className="col-span-3"
-                    />
-                  </div>
-                  {/* Cliente */}
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="client" className="text-right">
-                      Cliente
-                    </Label>
-                    <Input
-                      id="client"
-                      value={newTask.client}
-                      onChange={(e) =>
-                        setNewTask({ ...newTask, client: e.target.value })
-                      }
-                      className="col-span-3"
-                    />
-                  </div>
-                  {/* Documento */}
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="documentId" className="text-right">
-                      ID Documento
-                    </Label>
-                    <Input
-                      id="documentId"
-                      value={newTask.documentId}
-                      onChange={(e) =>
-                        setNewTask({ ...newTask, documentId: e.target.value })
-                      }
-                      className="col-span-3"
-                    />
-                  </div>
-                  {/* Tipo de tarea */}
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="type" className="text-right">
-                      Tipo
-                    </Label>
-                    <select
-                      id="type"
-                      value={newTask.type}
-                      onChange={(e) =>
-                        setNewTask({
-                          ...newTask,
-                          type: e.target.value as Task["type"],
-                        })
-                      }
-                      className="col-span-3"
-                    >
-                      <option value="cobertura">Cobertura</option>
-                      <option value="linea-credito">Línea de crédito</option>
-                      <option value="cotizacion">Cotización</option>
-                      <option value="seguimiento-cotizacion">
-                        Seguimiento cotización
-                      </option>
-                    </select>
-                  </div>
-                  {/* Fecha (opcional). Si Pongo la fecha => planned=true */}
-                  {/* <Input type="date" .../> */}
-                </div>
-                <Button onClick={handleAddTask}>Agregar tarea</Button>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
       </div>

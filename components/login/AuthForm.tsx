@@ -92,7 +92,7 @@ const AuthForm = <T extends FieldValues>({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className="mt-10 space-y-5"
+        className="mt-10 space-y-5 hidden"
       >
         <h1 className="mt-10 font-bold">{buttonText}</h1>
 

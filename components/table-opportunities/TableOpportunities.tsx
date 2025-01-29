@@ -75,13 +75,13 @@ interface FilterState {
   };
   oportunidadHija: string;
   rut: string;
+  nombreCliente: string;
 }
 
 function TableOpportunities(props: Props) {
   const { opportunitiesResp, settingsTable, session } = props;
   const searchParams = useSearchParams();
   const stateFilter = searchParams.get("state");
-
   const [columns, setColumns] = useState<ColumnConfig[]>(() => {
     const desiredOrder = [
       "estado",
@@ -111,6 +111,7 @@ function TableOpportunities(props: Props) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [inputOppHija, setInputOppHija] = useState(false);
+  const [inputNameClient, setInputNameClient] = useState(false);
   const [inputRut, setInputRut] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDialogConfigOpen, setIsDialogConfigOpen] = useState(false);
@@ -129,6 +130,7 @@ function TableOpportunities(props: Props) {
     fechaCierre: { start: null, end: null },
     oportunidadHija: "",
     rut: "",
+    nombreCliente: "",
   });
 
   // Obtener valores únicos para los filtros de selección
@@ -250,6 +252,15 @@ function TableOpportunities(props: Props) {
         item.oportunidadHija
           .toLowerCase()
           .includes(filterState.oportunidadHija.toLowerCase())
+      );
+    }
+
+    // FILTRO POR CLIENTE
+    if (filterState.nombreCliente.trim() !== "") {
+      filteredResults = filteredResults.filter((item) =>
+        item.nombreCliente
+          .toLowerCase()
+          .includes(filterState.nombreCliente.toLowerCase())
       );
     }
 
@@ -375,6 +386,7 @@ function TableOpportunities(props: Props) {
       fechaCierre: { start: null, end: null },
       oportunidadHija: "",
       rut: "",
+      nombreCliente: "",
     });
 
     // Reseteo los booleanos de hijas y rut
@@ -482,7 +494,7 @@ function TableOpportunities(props: Props) {
     <div>
       {/* VISTA ESCRITORIO */}
       <div className="hidden md:block">
-        <div className="min-w-[1200px] max-w-[1200px]">
+        <div className="min-w-[1320px] max-w-[1320px]">
           <div className="w-full flex items-center gap-2 bg-gray-100 py-4 pl-2 border-t-[1px] border-l-[1px] border-r-[1px] border-gray-200">
             <Button
               className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
@@ -581,6 +593,10 @@ function TableOpportunities(props: Props) {
                                 : column.label
                               : column.label === "RUT"
                               ? column.label === "RUT" && inputRut
+                                ? ""
+                                : column.label
+                              : column.label === "Nombre cliente"
+                              ? column.label === "Nombre cliente" && inputNameClient
                                 ? ""
                                 : column.label
                               : column.label}
@@ -696,6 +712,48 @@ function TableOpportunities(props: Props) {
                                 <Filter className={"text-muted-foreground"} />
                               </Button>
                             ))}
+
+                          {/* FILTRO POR CLIENTE  */}
+                          {column.key === "nombreCliente" && (
+                            <>
+                              {inputNameClient ? (
+                                <div className="relative flex items-center gap-2 justify-center">
+                                  <input
+                                    type="text"
+                                    className="border rounded px-2 py-1 text-sm pr-8 w-[100px] fade-in"
+                                    placeholder="Buscar cliente"
+                                    value={filterState.nombreCliente}
+                                    onChange={(e) =>
+                                      setFilterState((prev) => ({
+                                        ...prev,
+                                        nombreCliente: e.target.value,
+                                      }))
+                                    }
+                                  />
+                                  <button
+                                    className="absolute right-2 text-gray-500 hover:text-gray-800"
+                                    onClick={() => {
+                                      setFilterState((prev) => ({
+                                        ...prev,
+                                        nombreCliente: "",
+                                      }));
+                                      setInputNameClient(false);
+                                    }}
+                                  >
+                                    X
+                                  </button>
+                                </div>
+                              ) : (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setInputNameClient(true)}
+                                >
+                                  <Filter className="text-muted-foreground" />
+                                </Button>
+                              )}
+                            </>
+                          )}
 
                           {/* FILTRO POR RUT */}
                           {column.key === "rut" &&

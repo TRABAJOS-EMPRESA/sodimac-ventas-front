@@ -27,10 +27,10 @@ function ButtonsNav(props: Props) {
         </div>
 
         <div className="flex space-x-5">
-          <button onClick={handleLogoutClick} className="pb-1">
+          <button onClick={handleLogoutClick} className="pb-1"  tabIndex={0}>
             <LogOut size={29} className="text-primary-blue cursor-pointer" />
           </button>
-          <button className="pb-1">{getBellSVG({ w: "30", h: "30" })}</button>
+          <button  tabIndex={0} className="pb-1">{getBellSVG({ w: "30", h: "30" })}</button>
         </div>
 
         {/* Diálogo de confirmación */}

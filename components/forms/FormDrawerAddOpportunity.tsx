@@ -88,7 +88,7 @@ function FormDrawerAddOpportunity(props: Props) {
       phone: "",
       email: "",
       projectType: "",
-      income: "0",
+      income: 0,
       store: "",
       startDate: undefined,
       endDate: undefined,
@@ -120,7 +120,7 @@ function FormDrawerAddOpportunity(props: Props) {
           )
           ?.contacts.filter((contact) => contact.name === data.contactName)
           .map((contact) => contact.id) || [],
-      availableBudget: parseInt(data.income),
+      availableBudget: parseInt(data.income.toString()),
       startDate: data.startDate ?? null,
       endDate: data.endDate ?? null,
       description: data.description,
@@ -255,10 +255,10 @@ function FormDrawerAddOpportunity(props: Props) {
   }, [searchTerm, clients]);
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="w-full max-w-4xl mx-auto p-6 space-y-6" >
+      <div className="flex justify-between items-center" >
         <h1 className="text-1xl md:text-2xl font-bold">Crear nueva oportunidad</h1>
-        <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)}>
+        <Button variant="ghost" size="icon" onClick={() => setIsOpen(false)} tabIndex={-1}>
           <X className="h-6 w-6" />
         </Button>
       </div>
@@ -277,7 +277,7 @@ function FormDrawerAddOpportunity(props: Props) {
                   <FormItem>
                     <FormLabel>Nombre oportunidad</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nombre oportunidad" {...field} />
+                      <Input placeholder="Nombre oportunidad" {...field} tabIndex={-1} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -295,6 +295,7 @@ function FormDrawerAddOpportunity(props: Props) {
                         {/* Input de búsqueda */}
                         <Input
                           className="w-full"
+                          tabIndex={-1}
                           placeholder="Nombre cliente"
                           value={inputValue} // Muestra el valor seleccionado
                           onChange={(e) => {
@@ -311,6 +312,7 @@ function FormDrawerAddOpportunity(props: Props) {
                             <div className="absolute z-10 bg-white border rounded shadow w-full max-h-60 overflow-auto">
                               {filteredClients.map((client) => (
                                 <div
+                              
                                   key={client.id}
                                   className="p-2 hover:bg-gray-100 cursor-pointer"
                                   onClick={() => {
@@ -348,13 +350,14 @@ function FormDrawerAddOpportunity(props: Props) {
               /> */}
 
               <FormField
+              
                 control={form.control}
                 name="address"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Dirección obra</FormLabel>
+                  <FormItem >
+                    <FormLabel >Dirección obra</FormLabel>
                     <FormControl>
-                      <Input placeholder="Dirección" {...field} />
+                      <Input tabIndex={-1} placeholder="Dirección" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -365,9 +368,10 @@ function FormDrawerAddOpportunity(props: Props) {
                 control={form.control}
                 name="region"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Región</FormLabel>
+                  <FormItem >
+                    <FormLabel >Región</FormLabel>
                     <Select
+                   
                       onValueChange={(value) => {
                         field.onChange(value);
 
@@ -378,12 +382,12 @@ function FormDrawerAddOpportunity(props: Props) {
                       }}
                       defaultValue={field.value}
                     >
-                      <FormControl>
+                      <FormControl tabIndex={-1} >
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione la región" />
                         </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
+                      </FormControl  >
+                      <SelectContent >
                         {regions.map((region) => (
                           <SelectItem key={region.id} value={region.name}>
                             {region.name}
@@ -406,7 +410,7 @@ function FormDrawerAddOpportunity(props: Props) {
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
-                      <FormControl>
+                      <FormControl tabIndex={-1} >
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione la comuna" />
                         </SelectTrigger>
@@ -438,6 +442,7 @@ function FormDrawerAddOpportunity(props: Props) {
                     <FormControl>
                       <div className="relative">
                         <Input
+                        tabIndex={-1}
                           placeholder="Seleccione un contacto"
                           {...field}
                         />
@@ -450,7 +455,7 @@ function FormDrawerAddOpportunity(props: Props) {
                                 className="p-2 hover:bg-gray-100 cursor-pointer"
                                 onClick={() => {
                                   form.setValue("contactName", contact.name);
-                                  form.setValue("phone", contact.phone);
+                                  form.setValue("phone", contact.phone.trim().replace(/\s+/g, ''));
                                   form.setValue("email", contact.email);
                                   setFilteredContacts([]);
                                 }}
@@ -474,7 +479,7 @@ function FormDrawerAddOpportunity(props: Props) {
                   <FormItem>
                     <FormLabel>Teléfono</FormLabel>
                     <FormControl>
-                      <Input placeholder="Teléfono" type="tel" {...field} />
+                      <Input tabIndex={-1} placeholder="Teléfono" type="tel" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -488,7 +493,7 @@ function FormDrawerAddOpportunity(props: Props) {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="email" type="email" {...field} />
+                      <Input tabIndex={-1} placeholder="email" type="email" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -516,7 +521,7 @@ function FormDrawerAddOpportunity(props: Props) {
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
-                      <FormControl>
+                      <FormControl tabIndex={-1} >
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione tipo de proyecto" />
                         </SelectTrigger>
@@ -540,8 +545,9 @@ function FormDrawerAddOpportunity(props: Props) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Ingresos</FormLabel>
-                    <FormControl>
+                    <FormControl >
                       <Input
+                      tabIndex={-1}
                         placeholder="Monto en pesos"
                         type="number"
                         {...field}
@@ -562,7 +568,7 @@ function FormDrawerAddOpportunity(props: Props) {
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
-                      <FormControl>
+                      <FormControl tabIndex={-1} >
                         <SelectTrigger>
                           <SelectValue placeholder="Seleccione una tienda" />
                         </SelectTrigger>
@@ -593,6 +599,7 @@ function FormDrawerAddOpportunity(props: Props) {
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                          tabIndex={-1}
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
@@ -602,7 +609,7 @@ function FormDrawerAddOpportunity(props: Props) {
                             {field.value ? (
                               format(new Date(field.value), "dd/MM/yyyy")
                             ) : (
-                              <span>Seleccione fecha cierre</span>
+                              <span>Seleccione fecha de inicio</span>
                             )}
 
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
@@ -614,7 +621,7 @@ function FormDrawerAddOpportunity(props: Props) {
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
+                          // disabled={(date) => date < new Date()}
                           initialFocus
                         />
                       </PopoverContent>
@@ -634,6 +641,7 @@ function FormDrawerAddOpportunity(props: Props) {
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                          tabIndex={-1}
                             variant={"outline"}
                             className={cn(
                               "w-full pl-3 text-left font-normal",
@@ -655,7 +663,7 @@ function FormDrawerAddOpportunity(props: Props) {
                           mode="single"
                           selected={field.value}
                           onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
+                          // disabled={(date) => date < new Date()}
                           initialFocus
                         />
                       </PopoverContent>
@@ -672,13 +680,13 @@ function FormDrawerAddOpportunity(props: Props) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Descripción</FormLabel>
-                  <FormControl>
+                  <FormControl tabIndex={-1} >
                     <Textarea
                       placeholder="Descripción de la oportunidad"
                       className="resize-none"
                       {...field}
                     />
-                  </FormControl>
+                  </FormControl >
                   <div className="text-xs text-muted-foreground text-right">
                     {field.value?.length || 0}/300 caracteres
                   </div>
@@ -691,6 +699,7 @@ function FormDrawerAddOpportunity(props: Props) {
           <div className="flex md:justify-end gap-4">
             <Button
               onClick={() => setIsOpen(false)}
+              tabIndex={2} 
               type="button"
               className="py-2 px-3 w-full md:w-1/4 bg-gray-500 text-primary-white rounded-full "
             >
@@ -699,6 +708,7 @@ function FormDrawerAddOpportunity(props: Props) {
 
            
             <Button
+            tabIndex={2}
               type="submit"
               className="py-2 px-3 w-full md:w-1/4 bg-primary-blue text-primary-white rounded-full"
             >

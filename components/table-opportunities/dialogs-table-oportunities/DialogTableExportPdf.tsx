@@ -104,7 +104,7 @@ function DialogTableExportPdf(props: Props) {
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="all" id="all" />
                 <Label htmlFor="all">
-                  Exportar <span className="font-bold">todas las páginas</span>{" "}
+                  Exportar <span className="font-bold">todas las oportunidades</span>{" "}
                 </Label>
               </div>
               <div className="flex items-center space-x-2">

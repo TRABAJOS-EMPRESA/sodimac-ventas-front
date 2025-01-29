@@ -12,9 +12,9 @@ async function DeskExecutivePage() {
   const session = await auth();
 
   return (
-    <div className="w-full flex flex-col items-center justify-center h-full space-y-7 ">
+    <div className="w-full flex flex-col items-center justify-center h-full space-y-7 " >
       <div className="flex items-start justify-start text-left w-full">
-        <h1 className="text-2xl font-bold">Oportunidades de mi cartera</h1>
+        <h1 className="text-2xl font-bold" >Oportunidades de mi cartera</h1>
       </div>
       <div className="flex items-center w-full">
         <Image
@@ -22,9 +22,10 @@ async function DeskExecutivePage() {
           alt="calendar"
           width={20}
           height={20}
+          
         />
 
-        <span className="text-gray-400 text-sm ml-2">
+        <span className="text-gray-400 text-sm ml-2" >
           Periodo del 01 de Enero - 31 de Enero del {new Date().getFullYear()}
         </span>
       </div>
@@ -58,10 +59,11 @@ async function DeskExecutivePage() {
 
         <div className="w-full flex flex-col items-center justify-center space-y-3">
           <DrawerOpportunities w={"w-full"} session={session!} />
-          <ButtonDashboardCustom
-            title="Ver tabla de oportunidades"
-            route={ROUTES_EXECUTIVE.OPORTUNITIES_CHILD}
-          />
+            <ButtonDashboardCustom
+              tabIndex={1}
+              title="Ver tabla de oportunidades"
+              route={ROUTES_EXECUTIVE.OPORTUNITIES_CHILD}
+            />
         </div>
       </div>
 
@@ -96,7 +98,10 @@ async function DeskExecutivePage() {
           }}
         />
         <div className="w-full flex flex-col items-center justify-center space-y-3">
+
+          
           <ButtonDashboardCustom
+            tabIndex={1}
             title="Ver tareas"
             route={ROUTES_EXECUTIVE.TASKS}
           />
