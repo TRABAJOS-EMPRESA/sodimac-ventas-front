@@ -19,14 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Eye,
-  FileDown,
-  Filter,
-  FilterX,
-  Loader2,
-  Settings2,
-} from "lucide-react";
+import { Eye, FileDown, FilterX, Loader2, Settings2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
@@ -51,31 +44,16 @@ import { RangeFilter } from "./components/filters/RangeFilter";
 import { MultiSelectFilter } from "./components/filters/MultiSelectFilter";
 import MobileTableView from "./components/mobile/MobileTableView";
 import PaginationTable from "./components/paginacion/PaginationTable";
+import RutClientFilter from "./components/filters/RutClientFilter";
+import NameClientFilter from "./components/filters/NameClientFilter";
+import OpportunityChildFilter from "./components/filters/OpportunityChildName";
+import OpportunityParentFilter from "./components/filters/OpportunityParentFilter";
+import { FilterState } from "@/interfaces/table-settings/filter-state-table.interface";
 
 interface Props {
   opportunitiesResp: GetOpportunitiesByIDExecutive[] | ErrorResp | [];
   settingsTable: ColumnConfig[] | ErrorResp;
   session: Session;
-}
-
-interface FilterState {
-  estado: string[];
-  tipoProyecto: string[];
-  ingresos: {
-    min: number | null;
-    max: number | null;
-  };
-  fechaInicio: {
-    start: Date | null;
-    end: Date | null;
-  };
-  fechaCierre: {
-    start: Date | null;
-    end: Date | null;
-  };
-  oportunidadHija: string;
-  rut: string;
-  nombreCliente: string;
 }
 
 function TableOpportunities(props: Props) {
@@ -111,6 +89,7 @@ function TableOpportunities(props: Props) {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const [inputOppHija, setInputOppHija] = useState(false);
+  const [inputOppPadre, setInputOppPadre] = useState(false);
   const [inputNameClient, setInputNameClient] = useState(false);
   const [inputRut, setInputRut] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -129,6 +108,7 @@ function TableOpportunities(props: Props) {
     fechaInicio: { start: null, end: null },
     fechaCierre: { start: null, end: null },
     oportunidadHija: "",
+    oportunidadPadre: "",
     rut: "",
     nombreCliente: "",
   });
@@ -145,9 +125,13 @@ function TableOpportunities(props: Props) {
   );
 
   const handleMultiFilter = useCallback(() => {
-    let filteredResults = [...data];
+    const sourceData = stateFilter
+      ? data.filter((item) => item.estado === stateFilter)
+      : data;
 
-    // Filtro por estado
+    let filteredResults = [...sourceData];
+
+    // FILTRO POR ESTADO
     if (filterState.estado.length > 0) {
       filteredResults = filteredResults.filter((item) =>
         filterState.estado.includes(item.estado)
@@ -255,6 +239,15 @@ function TableOpportunities(props: Props) {
       );
     }
 
+    // FILTRO POR OPORTUNIDAD PADRE
+    if (filterState.oportunidadPadre.trim() !== "") {
+      filteredResults = filteredResults.filter((item) =>
+        item.oportunidadPadre
+          .toLowerCase()
+          .includes(filterState.oportunidadPadre.toLowerCase())
+      );
+    }
+
     // FILTRO POR CLIENTE
     if (filterState.nombreCliente.trim() !== "") {
       filteredResults = filteredResults.filter((item) =>
@@ -273,7 +266,7 @@ function TableOpportunities(props: Props) {
 
     setFilteredData(filteredResults);
     setCurrentPage(1);
-  }, [data, filterState]);
+  }, [data, filterState, stateFilter]);
 
   // USSEFFETCT PARA MANEJAR LO FILTROS
   useEffect(() => {
@@ -284,39 +277,48 @@ function TableOpportunities(props: Props) {
     const mapData = async () => {
       setLoading(true);
       try {
-        if (Array.isArray(opportunitiesResp)) {
-          const mappedData = opportunitiesResp.flatMap((opportunity) =>
-            opportunity.childs.map((child) => ({
-              id: child.id,
-              estado: child.status?.status || "Sin estado",
-              oportunidadPadre: opportunity.opportunityName || "Sin nombre",
-              oportunidadHija: String(child.productLine.name) || "Sin línea",
-              tipoProyecto: String(opportunity.projectType.name) || "Sin tipo",
-              nombreCliente: opportunity.client?.name || "Cliente desconocido",
-              rut: opportunity.client?.rut || "Sin RUT",
-              ingresos: child.availableBudget || 0,
-              fechaInicio: child.startDate
-                ? new Date(child.startDate).toLocaleDateString()
-                : "Sin fecha",
-              fechaCierre: child.endDate
-                ? new Date(child.endDate).toLocaleDateString()
-                : "Sin fecha",
-            }))
+        if (!Array.isArray(opportunitiesResp)) {
+          setData([]);
+          setFilteredData([]);
+          return;
+        }
+
+        // Mapeo de datos
+        const mappedData = opportunitiesResp.flatMap((opportunity) =>
+          opportunity.childs.map((child) => ({
+            id: child.id,
+            estado: child.status?.status || "Sin estado",
+            oportunidadPadre: opportunity.opportunityName || "Sin nombre",
+            oportunidadHija: String(child.productLine.name) || "Sin línea",
+            tipoProyecto: String(opportunity.projectType.name) || "Sin tipo",
+            nombreCliente: opportunity.client?.name || "Cliente desconocido",
+            rut: opportunity.client?.rut || "Sin RUT",
+            ingresos: child.availableBudget || 0,
+            fechaInicio: child.startDate
+              ? new Date(child.startDate).toLocaleDateString()
+              : "Sin fecha",
+            fechaCierre: child.endDate
+              ? new Date(child.endDate).toLocaleDateString()
+              : "Sin fecha",
+          }))
+        );
+
+        setData(mappedData);
+
+        // Si hay stateFilter, aplico el filtro
+        if (stateFilter) {
+          console.log("Aplicando filtro por estado:", stateFilter);
+          const filteredResults = mappedData.filter(
+            (item) => item.estado === stateFilter
           );
-
-          const filteredData = stateFilter
-            ? mappedData.filter((opportunity) =>
-                opportunity.estado
-                  .toLowerCase()
-                  .includes(stateFilter.toLowerCase())
-              )
-            : mappedData;
-
-          setFilteredData(filteredData);
-          setData(mappedData as Opportunity[]);
+          console.log("Resultados filtrados:", filteredResults);
+          setFilteredData(filteredResults);
+        } else {
+          setFilteredData(mappedData);
         }
       } catch (error) {
-        console.error("Error al cargar oportunidades:", error);
+        console.error("Error:", error);
+        setFilteredData([]);
       } finally {
         setLoading(false);
       }
@@ -333,6 +335,8 @@ function TableOpportunities(props: Props) {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  console.log("paginatedFilteredData", paginatedFilteredData);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
@@ -366,13 +370,12 @@ function TableOpportunities(props: Props) {
   const clearFilter = () => {
     // Reseteo la data filtrada
     const resetData = stateFilter
-      ? data.filter((row) =>
-          row.estado.toLowerCase().includes(stateFilter.toLowerCase())
-        )
+      ? data.filter((item) => item.estado === stateFilter)
       : data;
 
     setFilteredData(resetData);
     setCurrentPage(1);
+
 
     // Reseteo la cantidad de coliumnas y las vuelvo a la original
     setColumns(initialColumnOrder.map((col) => ({ ...col })));
@@ -387,6 +390,7 @@ function TableOpportunities(props: Props) {
       oportunidadHija: "",
       rut: "",
       nombreCliente: "",
+      oportunidadPadre: "",
     });
 
     // Reseteo los booleanos de hijas y rut
@@ -591,12 +595,17 @@ function TableOpportunities(props: Props) {
                                 inputOppHija
                                 ? ""
                                 : column.label
-                              : column.label === "RUT"
-                              ? column.label === "RUT" && inputRut
+                              : column.label === "Rut"
+                              ? column.label === "Rut" && inputRut
                                 ? ""
                                 : column.label
-                              : column.label === "Nombre cliente"
-                              ? column.label === "Nombre cliente" && inputNameClient
+                              : column.label === "Cliente"
+                              ? column.label === "Cliente" && inputNameClient
+                                ? ""
+                                : column.label
+                              : column.label === "Oportunidad Padre"
+                              ? column.label === "Oportunidad Padre" &&
+                                inputOppPadre
                                 ? ""
                                 : column.label
                               : column.label}
@@ -673,128 +682,44 @@ function TableOpportunities(props: Props) {
                             />
                           )}
 
-                          {/* FILTRO POR NOMBRE DE OPP HIJA */}
-                          {column.key === "oportunidadHija" &&
-                            (inputOppHija ? (
-                              <div className="relative flex items-center gap-2 justify-center">
-                                <input
-                                  type="text"
-                                  className="border rounded px-2 py-1 text-sm pr-8 w-[143px] fade-in"
-                                  placeholder="Op. Hija"
-                                  value={filterState.oportunidadHija}
-                                  onChange={(e) =>
-                                    setFilterState((prev) => ({
-                                      ...prev,
-                                      oportunidadHija: e.target.value,
-                                    }))
-                                  }
-                                />
+                          {column.key == "oportunidadPadre" && (
+                            <OpportunityParentFilter
+                              filterState={filterState}
+                              setFilterState={setFilterState}
+                              inputOppPadre={inputOppPadre}
+                              setInputOppPadre={setInputOppPadre}
+                            />
+                          )}
 
-                                <button
-                                  className="absolute right-2 text-gray-500 hover:text-gray-800"
-                                  onClick={() => {
-                                    setFilterState((prev) => ({
-                                      ...prev,
-                                      oportunidadHija: "",
-                                    }));
-                                    setInputOppHija(false);
-                                  }}
-                                >
-                                  X
-                                </button>
-                              </div>
-                            ) : (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setInputOppHija(true)}
-                              >
-                                <Filter className={"text-muted-foreground"} />
-                              </Button>
-                            ))}
+                          {/* FILTRO POR NOMBRE DE OPP HIJA */}
+                          {column.key === "oportunidadHija" && (
+                            <OpportunityChildFilter
+                              filterState={filterState}
+                              setFilterState={setFilterState}
+                              inputOppHija={inputOppHija}
+                              setInputOppHija={setInputOppHija}
+                            />
+                          )}
 
                           {/* FILTRO POR CLIENTE  */}
                           {column.key === "nombreCliente" && (
-                            <>
-                              {inputNameClient ? (
-                                <div className="relative flex items-center gap-2 justify-center">
-                                  <input
-                                    type="text"
-                                    className="border rounded px-2 py-1 text-sm pr-8 w-[100px] fade-in"
-                                    placeholder="Buscar cliente"
-                                    value={filterState.nombreCliente}
-                                    onChange={(e) =>
-                                      setFilterState((prev) => ({
-                                        ...prev,
-                                        nombreCliente: e.target.value,
-                                      }))
-                                    }
-                                  />
-                                  <button
-                                    className="absolute right-2 text-gray-500 hover:text-gray-800"
-                                    onClick={() => {
-                                      setFilterState((prev) => ({
-                                        ...prev,
-                                        nombreCliente: "",
-                                      }));
-                                      setInputNameClient(false);
-                                    }}
-                                  >
-                                    X
-                                  </button>
-                                </div>
-                              ) : (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => setInputNameClient(true)}
-                                >
-                                  <Filter className="text-muted-foreground" />
-                                </Button>
-                              )}
-                            </>
+                            <NameClientFilter
+                              filterState={filterState}
+                              setFilterState={setFilterState}
+                              inputNameClient={inputNameClient}
+                              setInputNameClient={setInputNameClient}
+                            />
                           )}
 
                           {/* FILTRO POR RUT */}
-                          {column.key === "rut" &&
-                            (inputRut ? (
-                              <div className="relative flex items-center gap-2">
-                                <input
-                                  type="text"
-                                  className="border rounded px-2 py-1 text-sm pr-8 ml-2 w-[100px] fade-in"
-                                  placeholder="Buscar RUT"
-                                  value={filterState.rut}
-                                  onChange={(e) =>
-                                    setFilterState((prev) => ({
-                                      ...prev,
-                                      rut: e.target.value,
-                                    }))
-                                  }
-                                />
-                                <button
-                                  className="absolute right-2 text-gray-500 hover:text-gray-800"
-                                  onClick={() => {
-                                    setFilterState((prev) => ({
-                                      ...prev,
-                                      rut: "",
-                                    }));
-                                    setInputRut(false);
-                                  }}
-                                >
-                                  X
-                                </button>
-                              </div>
-                            ) : (
-                              // ícono de filtro, botón, etc.
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => setInputRut(true)}
-                              >
-                                <Filter className="text-muted-foreground" />
-                              </Button>
-                            ))}
-
+                          {column.key === "rut" && (
+                            <RutClientFilter
+                              filterState={filterState}
+                              setFilterState={setFilterState}
+                              inputRut={inputRut}
+                              setInputRut={setInputRut}
+                            />
+                          )}
                           {/* FECHA DE CIERRE COMPONENTE DATERANGE FILTER */}
 
                           {column.key === "fechaCierre" && (
@@ -844,9 +769,9 @@ function TableOpportunities(props: Props) {
                                   className={
                                     {
                                       inicio: "bg-orange-500 text-white",
-                                      "POR VENCER": "bg-red-500 text-white",
+                                      "por vencer": "bg-red-500 text-white",
                                       cotizada: "bg-blue-500 text-white",
-                                      TERMINADA: "bg-green-500 text-white",
+                                      terminada: "bg-green-500 text-white",
                                     }[row.estado] || "bg-gray-300 text-black"
                                   }
                                 >

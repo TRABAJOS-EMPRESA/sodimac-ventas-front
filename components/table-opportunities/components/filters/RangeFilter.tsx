@@ -7,6 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { Filter } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -23,6 +24,7 @@ export const RangeFilter = (props: Props) => {
   const { column, min, max, onChange, openPopover, setOpenPopover } = props;
   const [localMin, setLocalMin] = useState<string>(min?.toString() || "");
   const [localMax, setLocalMax] = useState<string>(max?.toString() || "");
+  const isFilterActive = min !== null || max !== null;
 
   useEffect(() => {
     setLocalMin(min?.toString() || "");
@@ -60,11 +62,12 @@ export const RangeFilter = (props: Props) => {
       <PopoverTrigger asChild>
         <Button variant="ghost" size="sm">
           <Filter
-            className={
-              min !== null || max !== null
-                ? "text-primary"
-                : "text-muted-foreground"
-            }
+          className={cn(
+            "transition-colors",
+            isFilterActive ? 
+              "text-blue-500 fill-blue-500" : 
+              "text-muted-foreground"
+          )}
           />
         </Button>
       </PopoverTrigger>

@@ -7,6 +7,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { Filter } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -23,7 +24,7 @@ export const MultiSelectFilter = (props: Props) => {
   const { column, options, values, onChange, openPopover, setOpenPopover } =
     props;
   const [localValues, setLocalValues] = useState<string[]>(values);
-
+  const isFilterActive = values.length > 0;
   useEffect(() => {
     setLocalValues(values);
   }, [values]);
@@ -42,11 +43,14 @@ export const MultiSelectFilter = (props: Props) => {
     >
       <PopoverTrigger asChild>
         <Button variant="ghost" size="sm">
-          <Filter
-            className={
-              values.length > 0 ? "text-primary" : "text-muted-foreground"
-            }
-          />
+        <Filter 
+    className={cn(
+      "transition-colors",
+      isFilterActive ? 
+        "text-blue-500 fill-blue-500" : 
+        "text-muted-foreground"
+    )}
+  />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-60" align="start">

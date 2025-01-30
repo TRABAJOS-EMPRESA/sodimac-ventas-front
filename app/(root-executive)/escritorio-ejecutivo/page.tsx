@@ -5,16 +5,63 @@ import { auth } from "@/utils/auth";
 import ChartsTasks from "@/components/charts/ChartsTasks";
 import ButtonDashboardCustom from "@/components/button-table-opportunities/ButtonTableOpportunities";
 import ROUTES_EXECUTIVE from "@/constants/routes";
-
-// recibir data de endpoint
+import { getOpportunitiesByIdExecutive } from "@/actions/opportunities/get-opportunities-by-id-executive.action";
+import { getOpportunitiesByMonth } from "@/utils/getOppsByMonthByChartInit";
 
 async function DeskExecutivePage() {
   const session = await auth();
 
+  const opportunitiesResp = await getOpportunitiesByIdExecutive({
+    page: 1,
+    limit: 10000,
+  });
+
+  // OPORTUNIDAES ES ARRAY?
+  if (!Array.isArray(opportunitiesResp)) {
+    return null;
+  }
+
+  // FILTRAR LAS INICIADAS
+  const oppsInicio = opportunitiesResp.reduce((acc, opportunity) => {
+    const inicioChilds = opportunity.childs.filter(
+      (child) => child.status?.status?.toLowerCase() === "inicio"
+    );
+
+    // SI HAY INICIADAS LAS PUSHEAMOS AL ACCOMULADOR
+    if (inicioChilds.length > 0) {
+      acc.push({
+        ...opportunity,
+        childs: inicioChilds,
+      });
+    }
+
+    return acc;
+  }, [] as Array<(typeof opportunitiesResp)[0]>);
+
+  // ESTADISTICAS PARA EL CHART DE INICIAS
+  const totalOppsInicio = oppsInicio.reduce(
+    (acc, opp) => acc + opp.childs.length,
+    0
+  );
+
+  // PORCENTAJE DE INICIADAS
+  const totalOpps = opportunitiesResp.reduce(
+    (acc, opp) => acc + opp.childs.length,
+    0
+  );
+
+  // FUNCION EN UTILS PARA TRAER LA DATA PARA EL CHART
+  const opportunitiesByMonth = getOpportunitiesByMonth(opportunitiesResp);
+
+  // PORCENTAJE PARA EL CHART
+  const percentageInicio =
+    totalOpps > 0
+      ? `+${Math.min((totalOppsInicio / totalOpps) * 100, 100).toFixed(0)}%`
+      : "0%";
   return (
-    <div className="w-full flex flex-col items-center justify-center h-full space-y-7 " >
+    <div className="w-full flex flex-col items-center justify-center h-full space-y-7 ">
       <div className="flex items-start justify-start text-left w-full">
-        <h1 className="text-2xl font-bold" >Oportunidades de mi cartera</h1>
+        <h1 className="text-2xl font-bold">Oportunidades de mi cartera</h1>
       </div>
       <div className="flex items-center w-full">
         <Image
@@ -22,10 +69,9 @@ async function DeskExecutivePage() {
           alt="calendar"
           width={20}
           height={20}
-          
         />
 
-        <span className="text-gray-400 text-sm ml-2" >
+        <span className="text-gray-400 text-sm ml-2">
           Periodo del 01 de Enero - 31 de Enero del {new Date().getFullYear()}
         </span>
       </div>
@@ -35,10 +81,10 @@ async function DeskExecutivePage() {
           opportunitiesStart={{
             id: "1",
             state: "inicio",
-            labels: ["Ago", "Sep", "Oct", "Nov", "Dic"],
-            data: [12, 19, 3, 5, 2, 3],
-            numberOpportunities: "120",
-            percentage: "+12%",
+            labels: opportunitiesByMonth.labels,
+            data: opportunitiesByMonth.data,
+            numberOpportunities: totalOppsInicio.toString(),
+            percentage: percentageInicio,
           }}
           ongoingOpportunity={{
             id: "2",
@@ -59,11 +105,11 @@ async function DeskExecutivePage() {
 
         <div className="w-full flex flex-col items-center justify-center space-y-3">
           <DrawerOpportunities w={"w-full"} session={session!} />
-            <ButtonDashboardCustom
-              tabIndex={1}
-              title="Ver tabla de oportunidades"
-              route={ROUTES_EXECUTIVE.OPORTUNITIES_CHILD}
-            />
+          <ButtonDashboardCustom
+            tabIndex={1}
+            title="Ver tabla de oportunidades"
+            route={ROUTES_EXECUTIVE.OPORTUNITIES_CHILD}
+          />
         </div>
       </div>
 
@@ -98,8 +144,6 @@ async function DeskExecutivePage() {
           }}
         />
         <div className="w-full flex flex-col items-center justify-center space-y-3">
-
-          
           <ButtonDashboardCustom
             tabIndex={1}
             title="Ver tareas"

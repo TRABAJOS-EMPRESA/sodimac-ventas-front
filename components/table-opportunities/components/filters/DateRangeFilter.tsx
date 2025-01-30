@@ -6,6 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 import { Filter } from "lucide-react";
 
 export interface PopoverState {
@@ -40,6 +41,7 @@ export const DateRangeFilter = (props: Props) => {
       day: "2-digit",
     });
   };
+  const isFilterActive = startDate !== null || endDate !== null;
 
   return (
     <Popover
@@ -50,13 +52,14 @@ export const DateRangeFilter = (props: Props) => {
     >
       <PopoverTrigger asChild>
         <Button variant="ghost" size="sm">
-          <Filter
-            className={
-              startDate !== null || endDate !== null
-                ? "text-primary"
-                : "text-muted-foreground"
-            }
-          />
+        <Filter 
+    className={cn(
+      "transition-colors",
+      isFilterActive ? 
+        "text-blue-500 fill-blue-500" : 
+        "text-muted-foreground"
+    )}
+  />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-4" align="start">
