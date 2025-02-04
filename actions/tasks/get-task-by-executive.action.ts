@@ -7,8 +7,6 @@ import { refreshTokenServer } from "../refresh-token/refresh-token.action";
 import { updateSessionTokens } from "../update-session/update-session.action";
 import { Task } from "@/interfaces/task/task.interface";
 
-
-
 export async function getTaskByIdExecutive(): Promise<Task[] | ErrorResp | []> {
   const session = await auth();
   //   console.log("session", session?.user.id);
