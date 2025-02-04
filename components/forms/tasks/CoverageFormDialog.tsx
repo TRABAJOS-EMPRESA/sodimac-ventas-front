@@ -5,7 +5,6 @@ import { CalendarIcon, MapPin } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -37,6 +36,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { coverageFormSchema, CoverageFormValues } from "@/lib/validations";
+import { formatDateIsoToString } from "@/utils/formatDate";
 
 const coverageTypes = [
   { value: "basic", label: "Básica" },
@@ -47,10 +47,11 @@ const coverageTypes = [
 interface Props {
   id: string;
   onClose: () => void;
+  datePlanned: string;
 }
 
 export function CoverageFormDialog(props: Props) {
-  const { id, onClose } = props;
+  const { id, onClose, datePlanned } = props;
 
   const form = useForm<CoverageFormValues>({
     resolver: zodResolver(coverageFormSchema),
@@ -80,8 +81,17 @@ export function CoverageFormDialog(props: Props) {
           <div className="flex-1 p-6">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2 text-2xl">
-                <MapPin className="h-6 w-6" />
-                Cobertura id: {id}
+                <div className="flex flex-col">
+                  <div className="flex items-center">
+                    <MapPin className="h-6 w-6" />
+
+                    <span> Cobertura id: {id}</span>
+                  </div>
+                  <span>
+                    Fecha de planificación: {formatDateIsoToString(datePlanned)}
+                  </span>
+                </div>
+
                 <div className="ml-auto flex items-center gap-2">
                   <span className="text-base text-muted-foreground">
                     Tarea por vencer

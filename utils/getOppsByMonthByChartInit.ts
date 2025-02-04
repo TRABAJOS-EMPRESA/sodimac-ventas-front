@@ -6,10 +6,10 @@ export const getOpportunitiesByMonth = (opportunitiesResp: GetOpportunitiesByIDE
     // Obtener el mes actual
     const currentDate = new Date();
     
-    // Inicializar los 6 meses anteriores (incluyendo el actual)
+    // Inicializar 5 meses incluyend el actual
     for (let i = 4; i >= 0; i--) {
       const date = new Date();
-      date.setMonth(currentDate.getMonth() - i); // Restamos meses para ir hacia atrás
+      date.setMonth(currentDate.getMonth() - i); 
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       monthCountMap.set(monthKey, 0);
     }
@@ -21,10 +21,11 @@ export const getOpportunitiesByMonth = (opportunitiesResp: GetOpportunitiesByIDE
           const oppDate = new Date(child.startDate);
           const monthKey = `${oppDate.getFullYear()}-${String(oppDate.getMonth() + 1).padStart(2, '0')}`;
           
-          // Solo contar si está en los últimos 6 meses
+          // Solo contar si está en los últimos 5 meses
           const sixMonthsAgo = new Date();
-          sixMonthsAgo.setMonth(currentDate.getMonth() - 5);
-          sixMonthsAgo.setDate(1); // Primer día del mes
+          sixMonthsAgo.setMonth(currentDate.getMonth() - 4);
+          // Primer día del mes
+          sixMonthsAgo.setDate(1); 
           
           if (oppDate >= sixMonthsAgo && oppDate <= currentDate) {
             if (monthCountMap.has(monthKey)) {
@@ -44,7 +45,7 @@ const labels = sortedMonths.map(month => {
   const [year, monthNum] = month.split('-');
   const date = new Date(parseInt(year), parseInt(monthNum) - 1);
 
-  // Obtiene la abreviatura en español (por defecto suele venir con punto, ej. "sept.")
+  // Obtiene la abreviatura en español (por defecto suele venir con punto, ej. "sept")
   const shortMonth = date.toLocaleString('es-ES', { month: 'short' });
 
   // Capitaliza la primera letra

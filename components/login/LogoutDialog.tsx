@@ -32,7 +32,7 @@ export function LogoutDialog({ isOpen, onClose, session }: LogoutDialogProps) {
         session.user.email,
         session.user.accessTokenBack!
       );
-      console.log("logout --->", logout);
+      // console.log("logout --->", logout);
 
       if (
         logout.message === "Logout successful" ||

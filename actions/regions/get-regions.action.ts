@@ -9,7 +9,7 @@ import { updateSessionTokens } from "../update-session/update-session.action";
 export async function getRegions(): Promise<GetRegionsResp[] | ErrorResp | []> {
   const endpoint = `${process.env.BACKEND_URL}/regions`;
   const session = await auth()
-  console.log("endpoint", endpoint);
+  // console.log("endpoint", endpoint);
 
   try {
     let response = await fetch(endpoint, {

@@ -9,7 +9,7 @@ import { updateSessionTokens } from "../update-session/update-session.action";
 export async function getStores(): Promise<GetStoresResp[] | ErrorResp | []> {
   const endpoint = `${process.env.BACKEND_URL}/stores`;
   const session = await auth();
-  console.log("endpoint", endpoint);
+  // console.log("endpoint", endpoint);
 
   try {
     let response = await fetch(endpoint, {

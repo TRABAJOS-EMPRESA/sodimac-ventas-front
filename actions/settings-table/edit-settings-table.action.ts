@@ -21,7 +21,7 @@ export async function editSettingsTable(
     return error;
   }
 
-  console.log("settings desde endpoint", settings);
+  // console.log("settings desde endpoint", settings);
 
   const objectSettingsTableEdit = settings.map((setting) => {
     return {

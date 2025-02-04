@@ -2,15 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
+
 import {
   Table,
   TableBody,
@@ -19,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, FileDown, FilterX, Loader2, Settings2 } from "lucide-react";
+import { Eye, FileDown, FilterX } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
@@ -49,6 +41,8 @@ import NameClientFilter from "./components/filters/NameClientFilter";
 import OpportunityChildFilter from "./components/filters/OpportunityChildName";
 import OpportunityParentFilter from "./components/filters/OpportunityParentFilter";
 import { FilterState } from "@/interfaces/table-settings/filter-state-table.interface";
+import { formatterIncome } from "@/utils/formatterIncome";
+import TableConfigDialog from "./dialogs-table-oportunities/DialogTableConfig";
 
 interface Props {
   opportunitiesResp: GetOpportunitiesByIDExecutive[] | ErrorResp | [];
@@ -307,11 +301,11 @@ function TableOpportunities(props: Props) {
 
         // Si hay stateFilter, aplico el filtro
         if (stateFilter) {
-          console.log("Aplicando filtro por estado:", stateFilter);
+          // console.log("Aplicando filtro por estado:", stateFilter);
           const filteredResults = mappedData.filter(
             (item) => item.estado === stateFilter
           );
-          console.log("Resultados filtrados:", filteredResults);
+          // console.log("Resultados filtrados:", filteredResults);
           setFilteredData(filteredResults);
         } else {
           setFilteredData(mappedData);
@@ -336,7 +330,7 @@ function TableOpportunities(props: Props) {
     currentPage * itemsPerPage
   );
 
-  console.log("paginatedFilteredData", paginatedFilteredData);
+  // console.log("paginatedFilteredData", paginatedFilteredData);
 
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
@@ -375,7 +369,6 @@ function TableOpportunities(props: Props) {
 
     setFilteredData(resetData);
     setCurrentPage(1);
-
 
     // Reseteo la cantidad de coliumnas y las vuelvo a la original
     setColumns(initialColumnOrder.map((col) => ({ ...col })));
@@ -420,7 +413,7 @@ function TableOpportunities(props: Props) {
   };
 
   const handleOpenPdfDialog = () => {
-    console.log("ejtro a pdf");
+    // console.log("ejtro a pdf");
 
     setOpenPdfDialog(true);
   };
@@ -469,8 +462,9 @@ function TableOpportunities(props: Props) {
   const saveConfig = async () => {
     setLoadingSaveConfig(true);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const respEditSettings = await editSettingsTable(columns);
-      console.log("editSettings", respEditSettings);
+      // console.log("editSettings", respEditSettings);
 
       toast({
         title: "Configuración guardada",
@@ -507,64 +501,15 @@ function TableOpportunities(props: Props) {
               <FilterX className="mr-2 h-4 w-4" />
               Reestablecer Tabla
             </Button>
-            <Dialog
-              open={isDialogConfigOpen}
-              onOpenChange={setIsDialogConfigOpen}
-            >
-              <DialogTrigger asChild>
-                <Button className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out">
-                  <Settings2 className="mr-2 h-4 w-4" />
-                  Configurar tabla
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[800px] fade-in">
-                <DialogHeader>
-                  <DialogTitle>Columnas tabla de oportunidades</DialogTitle>
-                  <DialogDescription>
-                    En esta sección podrá marcar las columnas que desee
-                    visualizar.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid grid-cols-3 gap-4 py-4">
-                  {columns.map((column) => (
-                    <div
-                      key={column.key}
-                      className="flex items-center justify-between"
-                    >
-                      <span className="text-sm">{column.label}</span>
-                      <Switch
-                        checked={column.visible}
-                        className="bg-blue-600"
-                        disabled={column.key === "oportunidadHija"}
-                        onCheckedChange={() => toggleColumn(column.key)}
-                      />
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex justify-end gap-2">
-                  <Button
-                    className="w-1/4 border-2 border-gray-600 bg-gray-600 rounded-full font-bold text-primary-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-                    onClick={() => {
-                      clearFilter();
-                      setIsDialogConfigOpen(false);
-                    }}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    className="w-1/4 border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
-                    onClick={() => saveConfig()}
-                  >
-                    {loadingSaveConfig ? (
-                      <Loader2 className="animate-spin" />
-                    ) : (
-                      "Guardar configuración"
-                    )}
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            <TableConfigDialog
+              columns={columns}
+              onToggleColumn={toggleColumn}
+              clearFilter={clearFilter}
+              saveConfig={saveConfig}
+              loadingSaveConfig={loadingSaveConfig}
+              isDialogConfigOpen={isDialogConfigOpen}
+              setIsDialogConfigOpen={setIsDialogConfigOpen}
+            />
 
             <Button
               className="border-2 border-blue-500 text-blue-500 rounded-full font-bold bg-white shadow-md hover:shadow-lg active:shadow-sm active:translate-y-1 active:border-blue-700 transition-all duration-150 ease-in-out"
@@ -778,7 +723,9 @@ function TableOpportunities(props: Props) {
                                   {row.estado}
                                 </Badge>
                               ) : column.key === "ingresos" ? (
-                                `$${row[column.key].toLocaleString()}`
+                                `$${formatterIncome(
+                                  row[column.key].toLocaleString()
+                                )}`
                               ) : (
                                 row[column.key]
                               )}

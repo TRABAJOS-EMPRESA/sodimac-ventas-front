@@ -1,22 +1,20 @@
 "use server";
 
 import { ErrorResp } from "@/interfaces/error-resp/get-roles-error.interface";
-import { GetOpportunitiesByIDExecutive } from "@/interfaces/opportunities/get-opportunities-by-executiveId.interface";
 
 import { auth } from "@/utils/auth";
 import { refreshTokenServer } from "../refresh-token/refresh-token.action";
 import { updateSessionTokens } from "../update-session/update-session.action";
+import { Task } from "@/interfaces/task/task.interface";
 
 export interface PaginationGetOpportunitiesByIdExecutive {
   page: number;
   limit: number;
 }
 
-export async function getOpportunitiesByIdExecutive(
-  pagination: PaginationGetOpportunitiesByIdExecutive
-): Promise<GetOpportunitiesByIDExecutive[] | ErrorResp | []> {
-  const session = await auth();
-  // console.log("session", session?.user.id);
+const session = await auth();
+export async function getTaskByIdExecutive(): Promise<Task[] | ErrorResp | []> {
+  //   console.log("session", session?.user.id);
   if (!session?.user.id) {
     const error: ErrorResp = {
       message: "No session found",
@@ -25,7 +23,7 @@ export async function getOpportunitiesByIdExecutive(
     };
     return error;
   }
-  const endpoint = `${process.env.BACKEND_URL}/opportunities/executive/child/filter?executiveId=${session?.user.id}&page=${pagination.page}&limit=${pagination.limit}`;
+  const endpoint = `${process.env.BACKEND_URL}/tasks/executive/${session?.user.id}`;
   // console.log("endpoint", endpoint);
   // console.log("apikey", apikey);
 
@@ -54,9 +52,10 @@ export async function getOpportunitiesByIdExecutive(
     }
 
     if (response.ok) {
-      const data: GetOpportunitiesByIDExecutive[] = await response.json();
-      // console.log('desde endpoint get opps', data.map((o) => o.childs.map((c) => console.log(c))));
-      
+      const data: Task[] = await response.json();
+
+      console.log("data task desde servicio ->", data);
+
       return data;
     } else {
       const errorData: ErrorResp = await response.json();

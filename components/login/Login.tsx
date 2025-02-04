@@ -43,7 +43,7 @@ function Login() {
             console.log("Error de inicio de sesión:", result.error);
             return { success: false };
           } else {
-            console.log("Inicio de sesión exitoso:", result);
+            // console.log("Inicio de sesión exitoso:", result);
             router.push("/");
             return { success: true };
           }

@@ -8,18 +8,18 @@ import { updateSessionTokens } from "../update-session/update-session.action";
 
 export async function getClients(): Promise<GetClientResp[] | ErrorResp | []> {
   const endpoint = `${process.env.BACKEND_URL}/clients`;
-  const apikey = process.env.API_KEY as string;
+  // const apikey = process.env.API_KEY as string;
   const session = await auth();
-  console.log("endpoint", endpoint);
-  console.log("apikey", apikey);
-  if (!apikey) {
-    const error: ErrorResp = {
-      message: "API key no está configurada",
-      error: "ConfigError",
-      statusCode: 400,
-    };
-    return error;
-  }
+  // console.log("endpoint", endpoint);
+  // console.log("apikey", apikey);
+  // if (!apikey) {
+  //   const error: ErrorResp = {
+  //     message: "API key no está configurada",
+  //     error: "ConfigError",
+  //     statusCode: 400,
+  //   };
+  //   return error;
+  // }
   try {
     let response = await fetch(endpoint, {
       method: "GET",

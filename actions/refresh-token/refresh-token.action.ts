@@ -1,7 +1,7 @@
 "use server";
 
 export async function refreshTokenServer(refreshToken: string) {
-  console.log("refreshTokenServer", refreshToken);
+  // console.log("refreshTokenServer", refreshToken);
 
   try {
     const response = await fetch(
@@ -18,7 +18,7 @@ export async function refreshTokenServer(refreshToken: string) {
   
     const responseData = await response.json();
 
-    console.log("refreshTokenServer RESPONSEEEE ->>>>>>", responseData);
+    // console.log("refreshTokenServer RESPONSEEEE ->>>>>>", responseData);
 
     if (!response.ok) {
       throw new Error("Error renovando el token");

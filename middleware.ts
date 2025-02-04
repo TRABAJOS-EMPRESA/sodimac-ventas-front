@@ -50,7 +50,7 @@ export async function middleware(req: NextRequest) {
   // }
 
   if ((path === "/auth/login" || path === "/") && role) {
-    console.log("Usuario autenticado, rol:", role);
+    // console.log("Usuario autenticado, rol:", role);
 
     if (role === "ejecutivo") {
       return NextResponse.redirect(new URL("/escritorio-ejecutivo", req.url));

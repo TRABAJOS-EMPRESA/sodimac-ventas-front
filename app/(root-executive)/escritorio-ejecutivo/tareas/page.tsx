@@ -1,11 +1,10 @@
-'use client'
-
 import React from "react";
 // import { getIconTask1SVG } from "@/utils/icons-svg-data";
 // import HeaderPages from "@/components/header-pages/HeaderPages";
 // import ROUTES_EXECUTIVE from "@/constants/routes";
 // import TaskCard from "@/components/tasks/TaskCard";
-import TaskCalendar from "@/components/tasks/TaskCalendart";
+import TaskCalendar from "@/components/tasks/TaskCalendar";
+import { getTaskByIdExecutive } from "@/actions/tasks/get-task-by-executive.action";
 
 // export interface Task {
 //   id: string;
@@ -187,10 +186,10 @@ import TaskCalendar from "@/components/tasks/TaskCalendart";
 //   },
 // ];
 
-// // AQUI LO QUE HAY QUE HACER ES USAR REACT QUERY TRAERSE LA DATA 
+// // AQUI LO QUE HAY QUE HACER ES USAR REACT QUERY TRAERSE LA DATA
 // // FILTRARLA Y MOSTRARLA EN COLUMNAS, SI EL USUARIO CAMBIA UNA TAREA DE COLUMNA CAMBIARLE
-// // EL ESTADO AUTOMATICAMENTE Y DEJAR SIN EFECTO EL CACHE DE LA LLAMADA QUE TRAE A TODAS LAS TAREAS 
-// // PARA PROVOCAR EL EFECTO DE TOMAR UNA TAREA E INSERTARLA EN OTRA TABLA 
+// // EL ESTADO AUTOMATICAMENTE Y DEJAR SIN EFECTO EL CACHE DE LA LLAMADA QUE TRAE A TODAS LAS TAREAS
+// // PARA PROVOCAR EL EFECTO DE TOMAR UNA TAREA E INSERTARLA EN OTRA TABLA
 
 // const iniciadas: Task[] = tasks.filter(
 //   (t: Task) => t.statusOpportunity === "inicio"
@@ -202,7 +201,11 @@ import TaskCalendar from "@/components/tasks/TaskCalendart";
 //   (t: Task) => t.statusOpportunity === "finalizada"
 // );
 
-function TasksPage() {
+async function TasksPage() {
+  const tasks = await getTaskByIdExecutive();
+
+  console.log("tasks ->", tasks);
+
   return (
     // <section className="flex flex-col w-full h-full items-center">
     //   <HeaderPages
@@ -248,8 +251,7 @@ function TasksPage() {
     //   </div>
     // </section>
 
-
-    <TaskCalendar/>
+    <TaskCalendar taskCalendar={Array.isArray(tasks) ? tasks : []} />
   );
 }
 

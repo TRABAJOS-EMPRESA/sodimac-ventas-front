@@ -1,107 +1,34 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import FullCalendar from "@fullcalendar/react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import esLocale from "@fullcalendar/core/locales/es";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin, {
   Draggable,
-  EventReceiveArg,
   EventDragStopArg,
+  EventReceiveArg,
 } from "@fullcalendar/interaction";
-import esLocale from "@fullcalendar/core/locales/es";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import FullCalendar from "@fullcalendar/react";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import { useEffect, useRef, useState } from "react";
 
 import ROUTES_EXECUTIVE from "@/constants/routes";
+import { toast } from "@/hooks/use-toast";
+import { EventDropArg } from "@fullcalendar/core/index.js";
 import { useRouter } from "next/navigation";
 import { CoverageFormDialog } from "../forms/tasks/CoverageFormDialog";
-import { EventDropArg } from "@fullcalendar/core/index.js";
-import { toast } from "@/hooks/use-toast";
-
-type TaskType =
-  | "cobertura"
-  | "linea-credito"
-  | "cotizacion"
-  | "seguimiento-cotizacion";
-
-interface Task {
-  id: string;
-  planned: boolean;
-  title: string;
-  start: string;
-  end?: string;
-  client: string;
-  documentId: string;
-  type: TaskType;
-  color?: string;
-}
-
-// ICONO SEGUN TIPO
-function getIconByType(type: TaskType) {
-  switch (type) {
-    case "cobertura":
-      return "⚠️";
-    case "linea-credito":
-      return "❗";
-    case "cotizacion":
-      return "📄";
-    case "seguimiento-cotizacion":
-      return "📑";
-    default:
-      return "📌";
-  }
-}
-// LABEL DEL TIPO
-function getTypeLabel(type: TaskType) {
-  switch (type) {
-    case "cobertura":
-      return "Cobertura";
-    case "linea-credito":
-      return "Línea de crédito";
-    case "cotizacion":
-      return "Cotización";
-    case "seguimiento-cotizacion":
-      return "Seguimiento cotización";
-    default:
-      return type;
-  }
-}
-
-/** Tarjeta con el diseño e íconos para las tareas */
-function TaskCard({ task }: { task: Task }) {
-  const icon = getIconByType(task.type);
-  const typeLabel = getTypeLabel(task.type);
-  const dateLabel = task.start || "Sin fecha";
-
-  return (
-    <div className="fade-in relative rounded-lg border border-gray-200 bg-white p-3 shadow text-sm text-gray-800">
-      {/* Barra de color en el lado izquierdo */}
-      <div
-        className="absolute inset-y-0 left-0 w-2 rounded-tl-lg rounded-bl-lg"
-        style={{ backgroundColor: task.color }}
-      />
-      {/* Ícono en la esquina superior derecha */}
-      <div className="absolute top-2 right-2 text-xl">{icon}</div>
-
-      <h2 className="font-bold text-sm mb-1">{typeLabel}</h2>
-      <p className="text-xs text-gray-700">
-        <strong>{task.client}</strong>
-      </p>
-      <p className="text-xs text-gray-700 mb-1">{task.documentId}</p>
-      <p className="text-xs text-gray-800 mb-2">{task.title}</p>
-      <p className="text-xs text-gray-600">
-        <strong>Fecha:</strong> {dateLabel}
-      </p>
-    </div>
-  );
-}
+import { formatDateIsoToString } from "@/utils/formatDate";
+// import { Task, TaskResponse } from "@/interfaces/task/task.interface";
+// import { dataTasks } from "@/constants/data-tasks";
+import TaskCard from "./components/TaskCard";
+import { Task } from "@/interfaces/task/task.interface";
 
 // AUXILIAR OARA VER SI LAS FECHAS ESTAN DENTRO DEL MSS
 
 const isInCurrentMonth = (dateStr: string): boolean => {
-  console.log("incurrent month auxiliar fecha del arrastre-> ", dateStr);
+  // console.log("incurrent month auxiliar fecha del arrastre-> ", dateStr);
 
   if (!dateStr) return false;
 
@@ -115,75 +42,33 @@ const isInCurrentMonth = (dateStr: string): boolean => {
 
   // console.log("Fecha actual:", currentDate);
   // console.log("Fecha objetivo:", targetDate);
-  console.log("Son iguales:", currentDate.getTime() === targetDate.getTime());
+  // console.log("Son iguales:", currentDate.getTime() === targetDate.getTime());
 
   return currentDate.getTime() === targetDate.getTime();
 };
 
-export default function TaskCalendar() {
+
+interface Props {
+
+  taskCalendar: Task[]
+}
+
+export default function TaskCalendar(props: Props) {
+
+  const {taskCalendar} = props
   interface CoverageDialogProps {
     open: boolean;
     id?: string;
+    datePlanned?: string;
   }
 
   const router = useRouter();
   const unplannedContainerRef = useRef<HTMLDivElement | null>(null);
   const [coverageDialogForm, setCoverageDialogForm] =
-    useState<CoverageDialogProps>({ open: false, id: "" });
+    useState<CoverageDialogProps>({ open: false, id: "", datePlanned: "" });
   // DEFINI LAS PLANIFICADAS O NO BAJO UN CAMPO PLANNED TRUE O FALSE
   // ASI MUESTRO EN EL CALENDARIO LAS PLANIFICADAS Y EN LA LISTA LAS NO PLANIFICADAS
-  const [tasks, setTasks] = useState<Task[]>([
-    {
-      id: "1",
-      planned: false,
-      title: "Cobertura - Cliente 1",
-      start: "2024-01-08",
-      client: "Nombre cliente",
-      documentId: "11.111.111-1",
-      type: "cobertura",
-      color: "#3b82f6",
-    },
-    {
-      id: "2",
-      planned: false,
-      title: "Línea de crédito - Cliente 2",
-      start: "2024-01-15",
-      client: "Nombre cliente",
-      documentId: "11.111.111-1",
-      type: "linea-credito",
-      color: "#14b8a6",
-    },
-    {
-      id: "3",
-      planned: false,
-      title: "Cotización - Cliente 3",
-      start: "2024-01-16",
-      client: "Nombre cliente",
-      documentId: "11.111.111-1",
-      type: "cotizacion",
-      color: "#f59e0b",
-    },
-    {
-      id: "4",
-      planned: false,
-      title: "Seguimiento Cotización - Cliente 4",
-      start: "2024-01-17",
-      client: "Nombre cliente",
-      documentId: "11.111.111-1",
-      type: "seguimiento-cotizacion",
-      color: "#8B5CF6",
-    },
-    {
-      id: "5",
-      planned: false,
-      title: "Cobertura - Cliente 5",
-      start: "2024-01-08",
-      client: "Nombre cliente",
-      documentId: "11.111.111-1",
-      type: "cobertura",
-      color: "#3b82f6",
-    },
-  ]);
+  const [tasks, setTasks] = useState<Task[]>(taskCalendar);
 
   // // Datos temporales para crear nueva tarea
   // const [newTask, setNewTask] = useState<NewTask>({
@@ -207,68 +92,75 @@ export default function TaskCalendar() {
     }
   }, []);
 
-  const plannedTasks = tasks.filter((t) => t.planned);
+  // Función auxiliar para validar el rango de fechas
+  const isWithinDateRange = (
+    targetDate: string,
+    start: string,
+    end: string
+  ): boolean => {
+    const date = new Date(targetDate);
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+
+    return date >= startDate && date <= endDate;
+  };
+
+  // Función modificada para validar la fecha según el tipo de tarea
+  const isValidTaskDate = (task: Task, targetDate: string): boolean => {
+    // Si es cobertura, solo validamos que sea el mes actual
+    if (task.type.name === "Cobertura") {
+      return isInCurrentMonth(targetDate);
+    }
+
+    // Para otros tipos, validamos que esté dentro del rango start-end
+    return isWithinDateRange(targetDate, task.startDate.toLocaleString(), task.endDate.toLocaleString());
+  };
+
+  const plannedTasks = tasks
+    .filter((t) => t.planned)
+    .map((task) => ({
+      id: task.id,
+      taskName: task.taskName,
+      startDate: task.startDate,
+      color: task.color,
+    }));
   const unplannedTasks = tasks.filter((t) => !t.planned);
 
-  // const handleAddTask = () => {
-  //   if (!newTask.title) return;
-
-  //   const isPlanned = Boolean(newTask.start);
-  //   const newId = Date.now().toString();
-
-  //   const finalTask: Task = {
-  //     id: newId,
-  //     planned: isPlanned,
-  //     title: newTask.title,
-  //     start: newTask.start || "",
-  //     client: newTask.client || "",
-  //     documentId: newTask.documentId || "",
-  //     type: newTask.type || "cobertura",
-  //     color:
-  //       newTask.type === "cobertura"
-  //         ? "#3b82f6"
-  //         : newTask.type === "linea-credito"
-  //         ? "#14b8a6"
-  //         : newTask.type === "cotizacion"
-  //         ? "#f59e0b"
-  //         : "#8b5cf6",
-  //   };
-
-  //   setTasks((prev) => [...prev, finalTask]);
-  //   setNewTask({ title: "", client: "", documentId: "", type: "cobertura" });
-  // };
-
-  // ARRASTRO Y OBTENGO LA DATA
+  // Modificar handleEventReceive
   const handleEventReceive = (info: EventReceiveArg) => {
     const dataStr = info.draggedEl.getAttribute("data-event");
-
-    console.log("dataStr", dataStr);
-
     if (!dataStr) return;
 
     const droppedTask = JSON.parse(dataStr) as Task;
     const targetDate = info.event.startStr;
 
-    // AQUI HAGO LA VALIDACION DEL MES
-    if (!isInCurrentMonth(targetDate)) {
-      // SI NO REVIERTO LA ACCION DEL DRAG AN DROP
+    // Validación según tipo de tarea
+    if (!isValidTaskDate(droppedTask, targetDate)) {
       info.revert();
       toast({
         variant: "destructive",
         title: "Error al planificar",
-        description: "Solo se pueden planificar tareas para el mes actual",
+        description:
+          droppedTask.type.name === "Cobertura"
+            ? "Las tareas de cobertura solo pueden planificarse para el mes actual"
+            : `Esta tarea solo puede planificarse entre ${formatDateIsoToString(
+                droppedTask.startDate.toLocaleString()
+              )} y ${formatDateIsoToString(droppedTask.endDate.toLocaleString())}`,
       });
       return;
     }
 
-    // Y SI LA FECHA ES VALIDA ENVIAR EL EVENTO
+    // Actualizamos datePlanned en lugar de start
     setTasks((prev) =>
       prev.map((t) =>
-        t.id === droppedTask.id ? { ...t, planned: true, start: targetDate } : t
+        t.id === droppedTask.id
+          ? { ...t, planned: true, datePlanned: targetDate }
+          : t
       )
     );
 
-    info.event.setProp("title", droppedTask.title);
+    info.event.setProp("taskName", droppedTask.taskName);
+    info.event.setProp("plannedAT", droppedTask.planned);
     info.event.setProp("id", droppedTask.id);
     info.event.setProp("color", droppedTask.color);
   };
@@ -278,7 +170,6 @@ export default function TaskCalendar() {
       const eventId = info.event.id;
 
       // AQUI GUARDO LA FECHA ANTES DE GUARADAR EL OBJETO
-      const currentDate = info.event.startStr;
 
       info.event.remove();
 
@@ -289,7 +180,7 @@ export default function TaskCalendar() {
             ? {
                 ...t,
                 planned: false,
-                start: currentDate,
+                datePlanned: "", // Limpiamos datePlanned
               }
             : t
         )
@@ -314,22 +205,36 @@ export default function TaskCalendar() {
 
   const handleEventDrop = (info: EventDropArg) => {
     const newDate = info.event.startStr;
+    const eventId = info.event.id;
 
-    // Validar si la fecha de la tarea es del mes actual
-    if (!isInCurrentMonth(newDate)) {
+    const task = tasks.find((t) => t.id === eventId);
+    if (!task) return;
+
+    // Validación según tipo de tarea
+    if (!isValidTaskDate(task, newDate)) {
       info.revert();
       toast({
         variant: "destructive",
         title: "Error al planificar",
-        description: "Solo se pueden planificar tareas para el mes actual",
+        description:
+          task.type.name === "Cobertura"
+            ? "Las tareas de cobertura solo pueden planificarse para el mes actual"
+            : `Esta tarea solo puede planificarse entre ${task.startDate} y ${task.endDate}`,
       });
       return;
     }
 
-    // Actualizar la fecha de la tarea cuando se mueve dentro del calendario
-    const eventId = info.event.id;
+    // Actualizamos datePlanned y mantenemos planned en true
     setTasks((prev) =>
-      prev.map((t) => (t.id === eventId ? { ...t, start: newDate } : t))
+      prev.map((t) =>
+        t.id === eventId
+          ? {
+              ...t,
+              datePlanned: newDate,
+              planned: true, // Aseguramos que se mantenga como planificada
+            }
+          : t
+      )
     );
   };
   return (
@@ -352,6 +257,19 @@ export default function TaskCalendar() {
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
                 locale={esLocale}
+                dayCellContent={(args) => {
+                  return args.dayNumberText.replace("2024-", "");
+                }}
+                eventTimeFormat={{
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  meridiem: false,
+                }}
+                dayHeaderFormat={{
+                  weekday: "short",
+                  day: "2-digit",
+                  month: "2-digit",
+                }}
                 headerToolbar={{
                   left: "prev,next today",
                   center: "title",
@@ -368,11 +286,15 @@ export default function TaskCalendar() {
                 eventClick={(info) => {
                   // Verificar si el evento es de tipo cobertura
 
-                  console.log("click");
+                  // console.log("click");
 
                   const task = tasks.find((t) => t.id === info.event.id);
-                  if (task?.type === "cobertura") {
-                    setCoverageDialogForm({ open: true, id: task.id });
+                  if (task?.type.name === "Cobertura") {
+                    setCoverageDialogForm({
+                      open: true,
+                      id: task.id,
+                      datePlanned: task.plannedAt!,
+                    });
                   }
                 }}
               />
@@ -382,6 +304,7 @@ export default function TaskCalendar() {
           {coverageDialogForm.open && (
             <CoverageFormDialog
               id={coverageDialogForm.id!}
+              datePlanned={coverageDialogForm.datePlanned!}
               onClose={handleCloseCoverageFormDialog}
             />
           )}

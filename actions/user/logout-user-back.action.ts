@@ -13,7 +13,7 @@ export async function logoutUserBack(
   const session = await auth();
 
   // console.log("URLL BAAAAACKKKK LOGOUT", endpoint);
-console.log('token desde logout', token);
+// console.log('token desde logout', token);
 
   try {
     let response = await fetch(endpoint, {
@@ -25,14 +25,14 @@ console.log('token desde logout', token);
       },
     });
 
-    console.log("RESPONSEEEE LOGOUT ->>>>", response);
+    // console.log("RESPONSEEEE LOGOUT ->>>>", response);
 
     if (response.status === 401 && session) {
       const newTokens = await refreshTokenServer(
         session.user.refreshTokenBack!
       );
 
-      console.log("newTokens ->>>>>>", newTokens);
+      // console.log("newTokens ->>>>>>", newTokens);
 
       await updateSessionTokens(newTokens.accessToken, newTokens.refreshToken);
 
@@ -48,13 +48,13 @@ console.log('token desde logout', token);
 
     if (response.ok) {
       const data = await response.json();
-      console.log("data desde logout", data);
+      // console.log("data desde logout", data);
 
       return data;
     } else {
       const errorData: ErrorResp = await response.json();
 
-      console.log("errorData", errorData);
+      // console.log("errorData", errorData);
 
       return errorData;
     }

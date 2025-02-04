@@ -53,7 +53,7 @@ export async function getSettingsTable(): Promise<ColumnConfig[] | ErrorResp> {
 
     if (response.ok) {
       const data: GetSettingsTable = await response.json();
-      console.log("settings", data.settings);
+      // console.log("settings", data.settings);
 
       return data.settings;
     } else {

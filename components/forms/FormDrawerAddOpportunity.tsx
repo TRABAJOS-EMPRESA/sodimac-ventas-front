@@ -161,7 +161,7 @@ function FormDrawerAddOpportunity(props: Props) {
           title: "Error al crear oportunidad",
           description: resp.message,
         });
-        console.log("Opportunity created successfully:", resp);
+        // console.log("Opportunity created successfully:", resp);
       } else {
         toast({
           variant: "default",
